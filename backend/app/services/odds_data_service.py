@@ -1,4 +1,5 @@
 from app.models.bet_event import BetEvent
+from app.models.game import Game
 import httpx
 import logging
 from sqlalchemy.orm import Session
@@ -164,6 +165,10 @@ class OddsDataService:
             datetime_str = game["commence_time"]
             game_datetime = datetime.fromisoformat(datetime_str.replace("Z", "+00:00"))
 
+            new_game = await self.add_game(
+                home_team, away_team, game_datetime, league.sport_id, league.id
+            )
+
             bookmakers = game["bookmakers"]
             logger.info(
                 f"Available bookmakers for {home_team} vs {away_team}: {[b['key'] for b in bookmakers]}"
@@ -194,12 +199,8 @@ class OddsDataService:
                                 unique_bets.add(bet_key)
                                 await self.add_odd(
                                     event_name,
-                                    home_team,
-                                    away_team,
-                                    game_datetime,
                                     odds,
-                                    league.sport_id,
-                                    league.id,
+                                    new_game.id,
                                 )
 
                     elif market["key"] == "totals":
@@ -219,12 +220,8 @@ class OddsDataService:
                                 unique_bets.add(bet_key)
                                 await self.add_odd(
                                     event_name,
-                                    home_team,
-                                    away_team,
-                                    game_datetime,
                                     odds,
-                                    league.sport_id,
-                                    league.id,
+                                    new_game.id,
                                 )
 
         except Exception as e:
@@ -234,49 +231,82 @@ class OddsDataService:
         finally:
             db.close()
 
-    async def add_odd(
-        self, event_name, home_team, away_team, datetime, odds, sport_id, league_id
-    ):
+    async def add_odd(self, event_name, odds, game_id):
         if event_name is None or odds is None:
             logger.warning(
                 f"Skipping bet event due to missing data: event_name={event_name}, odds={odds}"
             )
             return
 
-        logger.info(
-            f"Adding bet event: {event_name} for {home_team} vs {away_team} with odds {odds}"
-        )
+        logger.info(f"Adding bet event: {event_name} for {game_id} with odds {odds}")
         db = SessionLocal()
         try:
             existing_bet_event = (
                 db.query(BetEvent)
                 .filter(
                     BetEvent.event == event_name,
-                    BetEvent.home_team == home_team,
-                    BetEvent.away_team == away_team,
-                    BetEvent.datetime == datetime,
-                    BetEvent.odds == odds,
+                    BetEvent.game_id == game_id,
                 )
                 .first()
             )
             if not existing_bet_event:
                 new_bet_event = BetEvent(
                     event=event_name,
-                    home_team=home_team,
-                    away_team=away_team,
-                    datetime=datetime,
                     odds=odds,
-                    sport_id=sport_id,
-                    league_id=league_id,
+                    game_id=game_id,
                 )
                 db.add(new_bet_event)
                 db.commit()
                 logger.info(
-                    f"Added new bet event: {event_name} for {home_team} vs {away_team}"
+                    f"Added new bet event: {event_name} for {game_id} with odds {odds}"
                 )
         except Exception as e:
             db.rollback()
             logger.error(f"Error adding odd: {str(e)}")
+            raise
+        finally:
+            db.close()
+
+    async def add_game(self, home_team, away_team, datetime, sport_id, league_id):
+        logger.info(f"Adding game: {home_team} vs {away_team} with datetime {datetime}")
+        db = SessionLocal()
+        try:
+            existing_game = (
+                db.query(Game)
+                .filter(
+                    Game.home_team == home_team,
+                    Game.away_team == away_team,
+                    Game.datetime == datetime,
+                    Game.sport_id == sport_id,
+                    Game.league_id == league_id,
+                )
+                .first()
+            )
+            if not existing_game:
+                new_game = Game(
+                    home_team=home_team,
+                    away_team=away_team,
+                    datetime=datetime,
+                    sport_id=sport_id,
+                    league_id=league_id,
+                )
+                db.add(new_game)
+                db.commit()
+                db.refresh(
+                    new_game
+                )  # Refresh to ensure the object is bound to the session
+                logger.info(
+                    f"Added new game: {home_team} vs {away_team} with datetime {datetime}"
+                )
+                return new_game
+            else:
+                db.refresh(
+                    existing_game
+                )  # Refresh existing game to ensure it's bound to session
+                return existing_game
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Error adding game: {str(e)}")
             raise
         finally:
             db.close()

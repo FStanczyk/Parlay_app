@@ -5,6 +5,7 @@ from app.models.league import League
 from app.models.user import User
 from app.models.bet_recommendation import BetRecommendation
 from app.models.tipster import Tipster
+from app.models.game import Game
 
 __all__ = [
     "BetEvent",
@@ -13,4 +14,5 @@ __all__ = [
     "User",
     "BetRecommendation",
     "Tipster",
+    "Game",
 ]

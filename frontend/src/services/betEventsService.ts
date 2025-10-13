@@ -24,6 +24,20 @@ export const betEventsApi = {
     return publicApiGet<BetEvent>(`/bet-events/${id}`);
   },
 
+  // Get N random bet events (public - no auth required)
+  getRandom: (limit: number = 10, sportId?: number, leagueId?: number, excludeIds?: number[]): Promise<BetEvent[]> => {
+    const params = new URLSearchParams();
+    params.append('limit', limit.toString());
+    if (sportId !== undefined) params.append('sport_id', sportId.toString());
+    if (leagueId !== undefined) params.append('league_id', leagueId.toString());
+    if (excludeIds && excludeIds.length > 0) params.append('exclude_ids', excludeIds.join(','));
+    
+    const queryString = params.toString();
+    const endpoint = `/bet-events/random?${queryString}`;
+    
+    return publicApiGet<BetEvent[]>(endpoint);
+  },
+
   // Create new bet event (requires authentication)
   create: (betEvent: Omit<BetEvent, 'id'>): Promise<BetEvent> => {
     return apiPost<BetEvent>('/bet-events/', betEvent);

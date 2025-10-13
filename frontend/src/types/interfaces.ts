@@ -11,17 +11,23 @@ export interface League {
   name: string;
 }
 
-export interface BetEvent {
+export interface Game {
   id: number;
-  odds: number;
   datetime: string;
   sport_id: number;
   league_id: number;
   home_team: string;
   away_team: string;
-  event: string;
   sport?: Sport;
   league?: League;
+}
+
+export interface BetEvent {
+  id: number;
+  odds: number;
+  game_id: number;
+  event: string;
+  game?: Game;
 }
 
 export interface User {

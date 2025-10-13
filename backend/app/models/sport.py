@@ -11,5 +11,5 @@ class Sport(Base):
     name = Column(String, nullable=False)
 
     # Relationships
-    bet_events = relationship("BetEvent", back_populates="sport")
     leagues = relationship("League", back_populates="sport")
+    games = relationship("Game", back_populates="sport")

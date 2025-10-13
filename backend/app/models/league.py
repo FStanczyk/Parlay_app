@@ -14,4 +14,4 @@ class League(Base):
     download = Column(Boolean, nullable=False, default=False)
     # Relationships
     sport = relationship("Sport", back_populates="leagues")
-    bet_events = relationship("BetEvent", back_populates="league")
+    games = relationship("Game", back_populates="league")

@@ -66,8 +66,16 @@ export const modernTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
-          boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+          borderRadius: 24, // 3 * 8px = 24px (matches borderRadius: 3)
+          boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
+          background: 'rgba(216 179 243 / 0.2)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+          transition: 'all 0.3s ease-in-out',
+          position: 'relative',
+          '&:hover': {
+            boxShadow: '0px 12px 40px rgba(0, 0, 0, 0.18)',
+          },
         },
       },
     },

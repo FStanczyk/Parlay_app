@@ -14,17 +14,20 @@ import { BetEvent } from '../types/interfaces';
 
 interface BetEventPanelProps {
   betEvent: BetEvent;
+  isLocked: boolean;
+  onLockToggle: (eventId: number) => void;
 }
 
 const BetEventPanel: React.FC<BetEventPanelProps> = ({
   betEvent,
+  isLocked,
+  onLockToggle,
 }) => {
-  const [isLocked, setIsLocked] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery('(max-width:600px)');
 
   const handleLockToggle = () => {
-    setIsLocked(!isLocked);
+    onLockToggle(betEvent.id);
   };
 
   const formatDate = (dateString: string) => {
@@ -37,20 +40,7 @@ const BetEventPanel: React.FC<BetEventPanelProps> = ({
   };
 
   return (
-    <Card
-      sx={{
-        borderRadius: 3,
-        boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-        background: 'rgba(216 179 243 / 0.2)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
-        transition: 'all 0.3s ease-in-out',
-        position: 'relative',
-        '&:hover': {
-          boxShadow: '0px 12px 40px rgba(0, 0, 0, 0.18)',
-        },
-      }}
-    >
+    <Card>
       {/* Lock Icon - Top Right Corner */}
       <IconButton
         onClick={handleLockToggle}
@@ -77,11 +67,11 @@ const BetEventPanel: React.FC<BetEventPanelProps> = ({
         {/* Main Content Layout - Two Rows */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 1 : 2 }}>
           {/* Top Row - Team names and Event */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingRight: 4.5 }}>
             <Box sx={{ flex: 1 }}>
               {/* Home team - Away team (bold at top left) */}
               <Typography variant="body1" component="h3" sx={{ fontWeight: 700, color: 'text.primary', mb: isMobile ? 0 : 0.5 }}>
-                {betEvent.home_team} - {betEvent.away_team}
+                {betEvent.game?.home_team} - {betEvent.game?.away_team}
               </Typography>
               
               {/* Event name (below in secondary color) */}
@@ -104,12 +94,12 @@ const BetEventPanel: React.FC<BetEventPanelProps> = ({
             <Box sx={{ textAlign: 'right' }}>
               {/* League name (top line) */}
               <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, fontSize: '0.75rem', lineHeight: 1.2 }}>
-                {betEvent.league?.name || `League ${betEvent.league_id}`}
+                {betEvent.game?.league?.name || `League ${betEvent.game?.league_id}`}
               </Typography>
               
               {/* Date and time (bottom line) */}
               <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, fontSize: '0.75rem', lineHeight: 1.2 }}>
-                {formatDate(betEvent.datetime)}
+                {betEvent.game?.datetime ? formatDate(betEvent.game.datetime) : 'TBD'}
               </Typography>
             </Box>
           </Box>
