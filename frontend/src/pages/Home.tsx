@@ -42,13 +42,12 @@ const Home: React.FC = () => {
     const fetchBetEvents = async () => {
       try {
         setLoading(true);
-        // Use random selection with default limit of 10, or use eventsNumber from filters
-        const limit = filters.eventsNumber ? parseInt(filters.eventsNumber) : 4;
-        const events = await betEventsApi.getRandom(limit);
+        // Use random selection with default limit of 4 (no filters applied initially)
+        const events = await betEventsApi.getRandom(4);
         setBetEvents(events);
-        // Clear locked events when fetching new events (filter change)
+        // Clear locked events when fetching new events
         setLockedEventIds(new Set());
-        console.log('Fetched random bet events:', events);
+        console.log('Fetched initial random bet events:', events);
       } catch (err) {
         console.error('Error fetching bet events:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch bet events');
@@ -58,7 +57,7 @@ const Home: React.FC = () => {
     };
 
     fetchBetEvents();
-  }, [filters.eventsNumber]);
+  }, []); // Only run once on component mount
 
   const handleBetClick = (betEvent: BetEvent) => {
     console.log('Bet clicked for event:', betEvent);
@@ -83,6 +82,31 @@ const Home: React.FC = () => {
       setGenerating(true);
       const limit = filters.eventsNumber ? parseInt(filters.eventsNumber) : 4;
       
+      // Parse sport and league IDs from filters
+      const sportId = filters.selectedSport && filters.selectedSport !== '' ? parseInt(filters.selectedSport) : undefined;
+      const leagueId = filters.selectedLeague && filters.selectedLeague !== '' ? parseInt(filters.selectedLeague) : undefined;
+      
+      // Parse odds filters
+      const minOdds = filters.minOdds ? parseFloat(filters.minOdds) : undefined;
+      const maxOdds = filters.maxOdds ? parseFloat(filters.maxOdds) : undefined;
+      
+      console.log('Generate button clicked with filters:', {
+        selectedSport: filters.selectedSport,
+        selectedLeague: filters.selectedLeague,
+        sportId,
+        leagueId,
+        minOdds,
+        maxOdds,
+        limit
+      });
+      
+      console.log('League debug:', {
+        selectedLeague: filters.selectedLeague,
+        leagueId,
+        isEmpty: filters.selectedLeague === '',
+        isUndefined: filters.selectedLeague === undefined
+      });
+      
       // Calculate how many new events we need (total - locked events)
       const lockedEvents = betEvents.filter(event => lockedEventIds.has(event.id));
       const newEventsNeeded = limit - lockedEvents.length;
@@ -94,7 +118,7 @@ const Home: React.FC = () => {
         const currentEventIds = betEvents.map(event => event.id);
         
         // Get new random events for the remaining slots, excluding current ones
-        newEvents = await betEventsApi.getRandom(newEventsNeeded, undefined, undefined, currentEventIds);
+        newEvents = await betEventsApi.getRandom(newEventsNeeded, sportId, leagueId, currentEventIds, minOdds, maxOdds);
       }
       
       // Combine locked events with new events
@@ -111,9 +135,10 @@ const Home: React.FC = () => {
   };
 
   const handleFiltersChange = (newFilters: FilterValues) => {
+    console.log('Filters received from component:', newFilters);
     setFilters(newFilters);
     console.log('Filters updated:', newFilters);
-    // The useEffect will automatically refetch when eventsNumber changes
+    // Filters are now only applied when Generate button is clicked
   };
 
   return (
@@ -140,7 +165,6 @@ const Home: React.FC = () => {
           <Filters onFiltersChange={handleFiltersChange} />
           
           {/* Generate Button */}
-          {betEvents.length > 0 && (
             <Box textAlign="center" mb={4}>
               <Button
                 variant="contained"
@@ -168,10 +192,9 @@ const Home: React.FC = () => {
                 Generate
               </Button>
             </Box>
-          )}
           {/* ParlaySummary - Above the grid, width matches one column */}
           <Box sx={{ mb: 4 }}>
-            <ParlaySummary />
+            <ParlaySummary betEvents={betEvents} />
           </Box>
           
           <Box position="relative">

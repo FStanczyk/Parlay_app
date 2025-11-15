@@ -11,13 +11,7 @@ from app.services.odds_data_service import odds_data_service
 
 
 async def main():
-    """Run the test function"""
-    print("Testing API call to /odds endpoint...")
-
-    result = await odds_data_service.download_events_and_odds(
-        only_one_by_key="icehockey_nhl"
-    )
-
+    result = await odds_data_service.refresh_events()
     return 0
 
 

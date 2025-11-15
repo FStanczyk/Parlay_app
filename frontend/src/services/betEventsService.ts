@@ -25,12 +25,14 @@ export const betEventsApi = {
   },
 
   // Get N random bet events (public - no auth required)
-  getRandom: (limit: number = 10, sportId?: number, leagueId?: number, excludeIds?: number[]): Promise<BetEvent[]> => {
+  getRandom: (limit: number = 10, sportId?: number, leagueId?: number, excludeIds?: number[], minOdds?: number, maxOdds?: number): Promise<BetEvent[]> => {
     const params = new URLSearchParams();
     params.append('limit', limit.toString());
     if (sportId !== undefined) params.append('sport_id', sportId.toString());
     if (leagueId !== undefined) params.append('league_id', leagueId.toString());
     if (excludeIds && excludeIds.length > 0) params.append('exclude_ids', excludeIds.join(','));
+    if (minOdds !== undefined) params.append('min_odds', minOdds.toString());
+    if (maxOdds !== undefined) params.append('max_odds', maxOdds.toString());
     
     const queryString = params.toString();
     const endpoint = `/bet-events/random?${queryString}`;

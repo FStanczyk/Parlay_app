@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
@@ -9,9 +9,11 @@ import {
   MenuItem,
   TextField,
   Collapse,
+  CircularProgress,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import { sportsApi, leaguesApi, Sport, League } from '../services/sportsLeaguesService';
 
 export interface FilterValues {
   selectedSport: string;
@@ -32,6 +34,59 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
   const [minOdds, setMinOdds] = useState<string>('');
   const [maxOdds, setMaxOdds] = useState<string>('');
   const [eventsNumber, setEventsNumber] = useState<string>('');
+  
+  // Data states
+  const [sports, setSports] = useState<Sport[]>([]);
+  const [leagues, setLeagues] = useState<League[]>([]);
+  const [loadingSports, setLoadingSports] = useState(true);
+  const [loadingLeagues, setLoadingLeagues] = useState(false);
+
+  // Fetch sports on component mount
+  useEffect(() => {
+    const fetchSports = async () => {
+      try {
+        setLoadingSports(true);
+        const sportsData = await sportsApi.getAll();
+        setSports(sportsData);
+      } catch (error) {
+        console.error('Error fetching sports:', error);
+      } finally {
+        setLoadingSports(false);
+      }
+    };
+
+    fetchSports();
+  }, []);
+
+  // Fetch leagues when sport changes
+  useEffect(() => {
+    const fetchLeagues = async () => {
+      if (selectedSport) {
+        try {
+          setLoadingLeagues(true);
+          const sportId = parseInt(selectedSport);
+          const leaguesData = await leaguesApi.getAll(sportId);
+          setLeagues(leaguesData);
+          // Reset selected league when sport changes
+          setSelectedLeague('');
+        } catch (error) {
+          console.error('Error fetching leagues:', error);
+        } finally {
+          setLoadingLeagues(false);
+        }
+      } else {
+        setLeagues([]);
+        setSelectedLeague('');
+      }
+    };
+
+    fetchLeagues();
+  }, [selectedSport]);
+
+  // Update parent when sport or league changes
+  useEffect(() => {
+    updateFilters();
+  }, [selectedSport, selectedLeague]);
 
   // Function to update parent component with current filter values
   const updateFilters = () => {
@@ -42,19 +97,19 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
       maxOdds,
       eventsNumber,
     };
+    console.log('Filters component sending to parent:', filters);
     onFiltersChange(filters);
   };
 
   const handleSportChange = (value: string) => {
     setSelectedSport(value);
-    // Update parent immediately for select changes
-    setTimeout(() => updateFilters(), 0);
+    // Clear league selection when sport changes
+    setSelectedLeague('');
   };
 
   const handleLeagueChange = (value: string) => {
+    console.log('League changed to:', value);
     setSelectedLeague(value);
-    // Update parent immediately for select changes
-    setTimeout(() => updateFilters(), 0);
   };
 
   const handleMinOddsChange = (value: string) => {
@@ -74,6 +129,15 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
     updateFilters();
   };
 
+  // Clear all filters
+  const handleClearFilters = () => {
+    setSelectedSport('');
+    setSelectedLeague('');
+    setMinOdds('');
+    setMaxOdds('');
+    setEventsNumber('');
+  };
+
   return (
     <Box sx={{ mb: 4 }}>
       <Grid container spacing={2} alignItems="center">
@@ -84,6 +148,7 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
               value={selectedSport}
               label="Sport"
               onChange={(e) => handleSportChange(e.target.value)}
+              disabled={loadingSports}
               sx={{
                 backgroundColor: '#ffffff',
                 borderRadius: '8px',
@@ -108,10 +173,20 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
                 },
               }}
             >
-              <MenuItem value="football">Football</MenuItem>
-              <MenuItem value="basketball">Basketball</MenuItem>
-              <MenuItem value="tennis">Tennis</MenuItem>
-              <MenuItem value="baseball">Baseball</MenuItem>
+              {loadingSports ? (
+                <MenuItem disabled>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CircularProgress size={16} />
+                    Loading sports...
+                  </Box>
+                </MenuItem>
+              ) : (
+                sports.map((sport) => (
+                  <MenuItem key={sport.id} value={sport.id.toString()}>
+                    {sport.name}
+                  </MenuItem>
+                ))
+              )}
             </Select>
           </FormControl>
         </Grid>
@@ -123,6 +198,7 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
               value={selectedLeague}
               label="League"
               onChange={(e) => handleLeagueChange(e.target.value)}
+              disabled={!selectedSport || loadingLeagues}
               sx={{
                 backgroundColor: '#ffffff',
                 borderRadius: '8px',
@@ -147,10 +223,24 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
                 },
               }}
             >
-              <MenuItem value="premier-league">Premier League</MenuItem>
-              <MenuItem value="la-liga">La Liga</MenuItem>
-              <MenuItem value="serie-a">Serie A</MenuItem>
-              <MenuItem value="bundesliga">Bundesliga</MenuItem>
+              {loadingLeagues ? (
+                <MenuItem disabled>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CircularProgress size={16} />
+                    Loading leagues...
+                  </Box>
+                </MenuItem>
+              ) : leagues.length === 0 ? (
+                <MenuItem disabled>
+                  {selectedSport ? 'No leagues available' : 'Select a sport first'}
+                </MenuItem>
+              ) : (
+                leagues.map((league) => (
+                  <MenuItem key={league.id} value={league.id.toString()}>
+                    {league.name}
+                  </MenuItem>
+                ))
+              )}
             </Select>
           </FormControl>
         </Grid>
@@ -189,7 +279,7 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
                 }}
               />
             </Grid>
-        <Grid item xs={12} sm={12} md={6}>
+        <Grid item xs={12} sm={6} md={3}>
           <Button
             variant="outlined"
             size="small"
@@ -210,6 +300,27 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
             }}
           >
             More filters
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={handleClearFilters}
+            sx={{
+              backgroundColor: '#ffffff',
+              border: '1px solid #000000',
+              borderRadius: '8px',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              color: 'text.primary',
+              marginLeft: '10px',
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderColor: '#000000',
+                color: 'text.primary',
+              }
+            }}
+          >
+            Clear filters
           </Button>
         </Grid>
       </Grid>

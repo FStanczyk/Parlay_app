@@ -88,12 +88,19 @@ def get_random_bet_events(
     limit: int = 10,
     sport_id: Optional[int] = None,
     league_id: Optional[int] = None,
+    min_odds: Optional[float] = None,
+    max_odds: Optional[float] = None,
     exclude_ids: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
     """Get N random bet events with game, sport and league data - frontend only access"""
     check_referer(request)
     current_time = datetime.now()
+
+    # Debug logging
+    print(
+        f"Random endpoint called with: sport_id={sport_id}, league_id={league_id}, min_odds={min_odds}, max_odds={max_odds}, limit={limit}"
+    )
 
     # Build base query with joins and time filter
     query = (
@@ -113,6 +120,12 @@ def get_random_bet_events(
     if league_id is not None:
         query = query.filter(Game.league_id == league_id)
 
+    if min_odds is not None:
+        query = query.filter(BetEvent.odds >= min_odds)
+
+    if max_odds is not None:
+        query = query.filter(BetEvent.odds <= max_odds)
+
     # Exclude specific event IDs if provided
     if exclude_ids:
         try:
@@ -127,6 +140,13 @@ def get_random_bet_events(
 
     # Get random events using database-level randomization
     bet_events = query.order_by(func.random()).limit(limit).all()
+
+    # Debug logging
+    print(f"Query returned {len(bet_events)} events")
+    for event in bet_events:
+        print(
+            f"Event {event.id}: Game {event.game_id}, League {event.game.league_id if event.game else 'None'}"
+        )
 
     return bet_events
 

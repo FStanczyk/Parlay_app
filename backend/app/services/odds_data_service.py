@@ -7,7 +7,7 @@ from app.core.database import SessionLocal
 from app.models.sport import Sport
 from app.models.league import League
 from app.core.config import settings
-from datetime import datetime
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -310,6 +310,124 @@ class OddsDataService:
             raise
         finally:
             db.close()
+
+    async def cleanup_old_games(self):
+        """
+        Remove all games and their associated bet events that are older than 2 days.
+        This function handles the cascade deletion properly by first removing bet events,
+        then removing the games.
+        """
+        db = SessionLocal()
+        try:
+            # Calculate cutoff date (today - 2 days)
+            cutoff_date = datetime.now() - timedelta(days=2)
+
+            logger.info(f"Starting cleanup of games older than {cutoff_date}")
+
+            # First, find all games older than cutoff date
+            old_games = db.query(Game).filter(Game.datetime < cutoff_date).all()
+
+            if not old_games:
+                logger.info("No old games found to clean up")
+                return
+
+            logger.info(f"Found {len(old_games)} games to clean up")
+
+            # Count bet events that will be deleted
+            total_bet_events = 0
+            for game in old_games:
+                bet_events_count = (
+                    db.query(BetEvent).filter(BetEvent.game_id == game.id).count()
+                )
+                total_bet_events += bet_events_count
+
+            logger.info(
+                f"Will delete {total_bet_events} bet events associated with old games"
+            )
+
+            # Delete all bet events associated with old games
+            deleted_bet_events = (
+                db.query(BetEvent)
+                .filter(BetEvent.game_id.in_([game.id for game in old_games]))
+                .delete(synchronize_session=False)
+            )
+
+            logger.info(f"Deleted {deleted_bet_events} bet events")
+
+            # Delete the old games
+            deleted_games = (
+                db.query(Game)
+                .filter(Game.datetime < cutoff_date)
+                .delete(synchronize_session=False)
+            )
+
+            logger.info(f"Deleted {deleted_games} games")
+
+            db.commit()
+            logger.info(
+                f"Cleanup completed successfully: {deleted_games} games and {deleted_bet_events} bet events removed"
+            )
+
+            return {
+                "deleted_games": deleted_games,
+                "deleted_bet_events": deleted_bet_events,
+                "cutoff_date": cutoff_date.isoformat(),
+            }
+
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Error during cleanup: {str(e)}")
+            raise
+        finally:
+            db.close()
+
+    async def refresh_events(self, only_one=False, only_one_by_key=None):
+        """
+        Clean old games and download new events in one operation.
+        This function first removes games older than 2 days, then downloads
+        new events and odds for all leagues with download=True.
+
+        Args:
+            only_one: If True, only download events for the first league
+            only_one_by_key: If provided, only download events for the league with this api_league_key
+
+        Returns:
+            dict: Summary of cleanup and download operations
+        """
+        try:
+            logger.info(
+                "Starting refresh_events: cleaning old games and downloading new events"
+            )
+
+            # Step 1: Clean up old games
+            logger.info("Step 1: Cleaning up old games...")
+            cleanup_result = await self.cleanup_old_games()
+
+            if cleanup_result:
+                logger.info(
+                    f"Cleanup completed: {cleanup_result['deleted_games']} games and "
+                    f"{cleanup_result['deleted_bet_events']} bet events removed"
+                )
+            else:
+                logger.info("No old games to clean up")
+
+            # Step 2: Download new events
+            logger.info("Step 2: Downloading new events and odds...")
+            await self.download_events_and_odds(
+                only_one=only_one, only_one_by_key=only_one_by_key
+            )
+
+            logger.info("Refresh events completed successfully!")
+
+            return {
+                "cleanup": cleanup_result,
+                "download": "completed",
+                "status": "success",
+            }
+
+        except Exception as e:
+            logger.error(f"Error during refresh_events: {str(e)}")
+            raise
 
 
 odds_data_service = OddsDataService()
