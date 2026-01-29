@@ -22,6 +22,18 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
 
+      - name: Create .env file from secrets
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: |
+          cat > .env << EOF
+          DATABASE_URL=${DATABASE_URL}
+          SECRET_KEY=${SECRET_KEY}
+          ODDS_API_KEY=${ODDS_API_KEY}
+          EOF
+
       - name: Start Docker services
         run: |
           docker-compose up -d --build db
