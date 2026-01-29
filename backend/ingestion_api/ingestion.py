@@ -443,7 +443,6 @@ def set_results():
 
 
 if __name__ == "__main__":
-    # populate_sports_to_database()
-    # populate_events()
+    populate_events()
     set_results()
     clean_old_games()
