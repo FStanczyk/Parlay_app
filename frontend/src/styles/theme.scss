@@ -1,0 +1,128 @@
+/* Centralized Theme - SCSS Variables */
+/* Edit this file to change the entire app theme */
+
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200;0,6..72,400;1,6..72,200&family=Inter:wght@300;400;600;700&display=swap');
+
+:root {
+  /* Colors - Primary */
+  --color-primary: #aff6ae;
+  --color-primary-light: color-mix(in srgb, var(--color-primary) 70%, white);
+  --color-primary-dark: color-mix(in srgb, var(--color-primary) 70%, black);
+
+  /* Colors - Secondary */
+  --color-secondary: #6c757d;
+  --color-secondary-light: color-mix(in srgb, var(--color-secondary) 70%, white);
+  --color-secondary-dark: color-mix(in srgb, var(--color-secondary) 70%, black);
+
+  /* Background & Surface */
+  --color-bg: #120e0b;
+  --color-bg-secondary: #161008;
+  --color-surface: #1b251b;
+  --color-surface-elevated: #ffffff;
+
+  /* Text Colors */
+  --color-text-primary: var(--color-primary);
+  --color-text-secondary: color-mix(in srgb, var(--color-text-primary) 70%, black);
+  --color-text-muted: color-mix(in srgb, var(--color-text-primary) 70%, white);
+  --color-text-inverse: color-mix(in srgb, var(--color-text-primary) 0%, white);
+
+  /* Status Colors */
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-danger: #dc3545;
+  --color-info: #17a2b8;
+
+  /* Border & Subtle */
+  --color-border: color-mix(in srgb, var(--color-text-primary) 60%, black);
+  --color-border-subtle: color-mix(in srgb, var(--color-text-muted) 40%, black);
+  --color-divider: #e9ecef;
+
+  /* Spacing Scale */
+  --spacing-xs: 0.25rem;   /* 4px */
+  --spacing-sm: 0.5rem;     /* 8px */
+  --spacing-md: 1rem;       /* 16px */
+  --spacing-lg: 1.5rem;     /* 24px */
+  --spacing-xl: 2rem;       /* 32px */
+  --spacing-2xl: 3rem;      /* 48px */
+  --spacing-3xl: 4rem;      /* 64px */
+
+  /* Typography */
+  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  --font-family-heading: 'Newsreader', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, serif;
+
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 2rem;      /* 32px */
+  --font-size-4xl: 2.5rem;    /* 40px */
+
+  --font-weight-light: 100;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* Border Radius */
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-md: 0.5rem;    /* 8px */
+  --radius-lg: 1rem;       /* 16px */
+  --radius-xl: 1.5rem;    /* 24px */
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+  /* Text Glow */
+  --text-glow-subtle: 0 0 14px color-mix(in srgb, var(--color-primary-dark) 50%, transparent);
+  --text-glow-light: 0 0 12px var(--color-primary-dark);
+  --text-glow-mild: 0 0 22px var(--color-primary-dark);
+
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-base: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+
+  /* Z-index Scale */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+
+  /* Layout */
+  --container-max-width: 1200px;
+  --container-padding-mobile: var(--spacing-md);
+  --container-padding-tablet: var(--spacing-lg);
+  --container-padding-desktop: var(--spacing-xl);
+
+  /* Touch Targets (Mobile-first) */
+  --touch-target-min: 48px;
+}
+
+/* Dark theme variant (optional - can be enabled via class on body/html) */
+[data-theme="dark"] {
+  --color-bg: #121212;
+  --color-bg-secondary: #1e1e1e;
+  --color-surface: #1e1e1e;
+  --color-surface-elevated: #2d2d2d;
+
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b3b3b3;
+  --color-text-muted: #808080;
+
+  --color-border: #333333;
+  --color-border-subtle: #2d2d2d;
+  --color-divider: #2d2d2d;
+}

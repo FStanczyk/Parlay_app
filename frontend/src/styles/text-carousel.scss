@@ -1,0 +1,16 @@
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.cursor {
+  animation: blink 1.2s ease-in-out infinite;
+  color: var(--color-text-primary);
+}

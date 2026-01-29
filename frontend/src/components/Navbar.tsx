@@ -1,189 +1,289 @@
-import React, { useState } from 'react';
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  Box,
-  Container,
-  IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import CloseIcon from '@mui/icons-material/Close';
+import React, { useEffect, useState } from 'react';
+import { FiChevronDown, FiMenu, FiX } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { APP_NAME, ROUTES } from '../constants';
+import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../contexts/TranslationContext';
+import { availableLanguages } from '../translations';
+import { Icon } from '../utils/Icon';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md')); // Below 768px
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [expertsDropdownOpen, setExpertsDropdownOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const { isAuthenticated, user, logout, isExpert } = useAuth();
+  const { t, language, setLanguage } = useTranslation();
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleNavigation = (route: string) => {
-    navigate(route);
+  const handleNavigation = (route?: string, action?: string) => {
+    if (action === 'logout') {
+      handleLogout();
+    } else if (route) {
+      navigate(route);
+      setMobileOpen(false);
+      setExpertsDropdownOpen(false);
+      setProfileDropdownOpen(false);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate(ROUTES.HOME);
     setMobileOpen(false);
   };
 
-  const navigationItems = [
-    { label: 'Home', route: ROUTES.HOME },
-    { label: 'Login', route: ROUTES.LOGIN },
-    { label: 'Register', route: ROUTES.REGISTER },
-    { label: 'Dashboard', route: ROUTES.DASHBOARD },
-  ];
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      // Don't close if clicking on dropdown elements
+      if (!target.closest('.navbar__dropdown') && !target.closest('.navbar__dropdown-menu')) {
+        setExpertsDropdownOpen(false);
+        setProfileDropdownOpen(false);
+      }
+    };
 
-  const drawer = (
-    <Box sx={{ width: 250 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
-        <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 600 }}>
-          {APP_NAME}
-        </Typography>
-        <IconButton onClick={handleDrawerToggle}>
-          <CloseIcon />
-        </IconButton>
-      </Box>
-      <List>
-        {navigationItems.map((item) => (
-          <ListItem key={item.label} disablePadding>
-            <ListItemButton
-              onClick={() => handleNavigation(item.route)}
-              sx={{
-                mx: 2,
-                my: 0.5,
-                borderRadius: '25px',
-                backgroundColor: '#ffffff',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                }
-              }}
-            >
-              <ListItemText 
-                primary={item.label} 
-                sx={{ 
-                  textAlign: 'center',
-                  '& .MuiListItemText-primary': {
-                    color: 'text.primary',
-                    fontWeight: 500,
-                  }
-                }} 
-              />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  );
+    if (expertsDropdownOpen || profileDropdownOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [expertsDropdownOpen, profileDropdownOpen]);
+
+  const handleDropdownToggle = (dropdown: 'experts' | 'profile') => {
+    if (dropdown === 'experts') {
+      setExpertsDropdownOpen(!expertsDropdownOpen);
+      setProfileDropdownOpen(false);
+    } else {
+      setProfileDropdownOpen(!profileDropdownOpen);
+      setExpertsDropdownOpen(false);
+    }
+  };
+
+  const getNavigationItems = (): Array<{
+    label: string;
+    route?: string;
+    dropdown?: boolean;
+    items?: Array<{ label: string; route?: string; action?: string }>;
+  }> => {
+    const philipSnatModelsItem = { label: t.nav.philipSnatModels, route: ROUTES.PHILIP_SNAT_MODELS };
+
+    if (!isAuthenticated) {
+      return [
+        philipSnatModelsItem,
+        { label: t.nav.generator, route: ROUTES.GENERATOR },
+        { label: t.nav.plans, route: ROUTES.PLANS },
+        { label: t.nav.becomeExpert, route: ROUTES.BECOME_EXPERT },
+        { label: t.nav.login, route: ROUTES.LOGIN },
+        { label: t.nav.register, route: ROUTES.REGISTER },
+      ];
+    }
+
+    const profileItems = [
+      { label: t.nav.dashboard, route: ROUTES.PROFILE_DASHBOARD },
+      { label: t.nav.myParlays, route: ROUTES.PROFILE_PARLAYS },
+      { label: t.nav.stats, route: ROUTES.PROFILE_STATS },
+      { label: t.nav.settings, route: ROUTES.PROFILE_SETTINGS },
+      ...(!isExpert ? [{ label: t.nav.becomeExpert, route: ROUTES.BECOME_EXPERT }] : []),
+      { label: t.nav.logout, action: 'logout' },
+    ];
+
+    const navItems = [
+      philipSnatModelsItem,
+      { label: t.nav.hub, route: ROUTES.HUB },
+      { label: t.nav.generator, route: ROUTES.GENERATOR },
+      {
+        label: t.nav.experts,
+        dropdown: true,
+        items: [
+          { label: t.nav.searchExperts, route: ROUTES.EXPERTS_SEARCH },
+          { label: t.nav.following, route: ROUTES.EXPERTS_FOLLOWING },
+          { label: t.nav.recommendations, route: ROUTES.EXPERTS_RECOMMENDATIONS },
+        ]
+      },
+      { label: t.nav.simulator, route: ROUTES.SIMULATOR },
+      ...(isExpert ? [{ label: t.nav.expertPanel, route: ROUTES.EXPERT_PANEL }] : []),
+      ...(user?.is_admin ? [{ label: t.nav.adminPanel, route: ROUTES.ADMIN_PANEL }] : []),
+      {
+        label: t.nav.profile,
+        dropdown: true,
+        items: profileItems
+      },
+    ];
+
+    return navItems;
+  };
+
+  const navigationItems = getNavigationItems();
 
   return (
     <>
-      <AppBar 
-        position="static"
-        sx={{
-          backgroundColor: 'rgba(0, 0, 0, 0.1)',
-          backdropFilter: 'blur(20px)',
-          boxShadow: 'none',
-          borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
-        }}
-      >
-        <Container maxWidth="lg">
-          <Toolbar>
-            <Typography
-              variant="h6"
-              component="div"
-              sx={{ 
-                flexGrow: 1, 
-                cursor: 'pointer',
-                color: 'text.primary',
-                fontWeight: 600,
-              }}
+      <nav className="navbar">
+          <div className="navbar__toolbar">
+            <h3
+              className="navbar__logo"
               onClick={() => navigate(ROUTES.HOME)}
             >
               {APP_NAME}
-            </Typography>
-            
-            {/* Desktop Navigation */}
+            </h3>
+
             {!isMobile && (
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                {navigationItems.map((item) => (
-                  <Button 
-                    key={item.label}
-                    sx={{ 
-                      color: 'text.primary',
-                      fontWeight: 500,
-                      backgroundColor: '#ffffff',
-                      borderRadius: '50px',
-                      px: 3,
-                      py: 1,
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                      }
-                    }} 
-                    onClick={() => navigate(item.route)}
-                  >
-                    {item.label}
-                  </Button>
-                ))}
-              </Box>
-            )}
+              <div className="navbar__desktop-menu">
+                {navigationItems.map((item) => {
+                  if (item.dropdown) {
+                    const isExpertsDropdown = item.label === t.nav.experts;
+                    const isOpen = isExpertsDropdown ? expertsDropdownOpen : profileDropdownOpen;
 
-            {/* Mobile Menu Button */}
-            {isMobile && (
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                edge="end"
-                onClick={handleDrawerToggle}
-                sx={{ 
-                  color: 'text.primary',
-                  backgroundColor: '#ffffff',
-                  borderRadius: '50px',
-                  boxShadow: '0px 8px 32px rgba(0, 0, 0, 0.12)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    return (
+                      <div key={item.label} className="navbar__dropdown">
+                        <button
+                          className="navbar__button navbar__dropdown-toggle"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDropdownToggle(isExpertsDropdown ? 'experts' : 'profile');
+                          }}
+                        >
+                          {item.label}
+                          <Icon component={FiChevronDown} aria-hidden={true} />
+                        </button>
+                        {isAuthenticated && isOpen && (
+                          <div className="navbar__dropdown-menu">
+                            {item.items?.map((subItem) => (
+                              <button
+                                key={subItem.label}
+                                className="navbar__dropdown-item"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleNavigation(subItem.route, subItem.action);
+                                }}
+                              >
+                                {subItem.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
                   }
-                }}
-              >
-                <MenuIcon />
-              </IconButton>
-            )}
-          </Toolbar>
-        </Container>
-      </AppBar>
 
-      {/* Mobile Drawer */}
-      <Drawer
-        variant="temporary"
-        anchor="right"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{
-          keepMounted: true, // Better open performance on mobile.
-        }}
-        sx={{
-          '& .MuiDrawer-paper': {
-            boxSizing: 'border-box',
-            width: 250,
-            backgroundColor: 'rgba(216 179 243 / 0.2)',
-            backdropFilter: 'blur(20px)',
-            borderLeft: '1px solid rgba(255, 255, 255, 0.3)',
-          },
-          '& .MuiBackdrop-root': {
-            backgroundColor: 'transparent',
-          },
-        }}
-      >
-        {drawer}
-      </Drawer>
+                  return (
+                    <button
+                      key={item.label}
+                      className="navbar__button"
+                      onClick={() => handleNavigation(item.route)}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
+                <div className="navbar__language-switcher">
+                  {availableLanguages.map((lang) => (
+                    <button
+                      key={lang}
+                      className={`navbar__language-button ${language === lang ? 'navbar__language-button--active' : ''}`}
+                      onClick={() => setLanguage(lang)}
+                      aria-label={`Switch to ${lang.toUpperCase()}`}
+                    >
+                      {lang.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {isMobile && (
+              <button
+                className="navbar__menu-button"
+                aria-label="open drawer"
+                onClick={handleDrawerToggle}
+              >
+                <Icon component={FiMenu} aria-hidden={true} />
+              </button>
+            )}
+          </div>
+      </nav>
+
+      {mobileOpen && (
+        <div className="navbar__drawer-overlay" onClick={handleDrawerToggle}>
+          <div className="navbar__drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="navbar__drawer-header">
+              <button
+                className="navbar__drawer-close"
+                onClick={handleDrawerToggle}
+                aria-label="close drawer"
+              >
+                <Icon component={FiX} aria-hidden={true} />
+              </button>
+            </div>
+            <ul className="navbar__drawer-list">
+              {navigationItems.map((item) => {
+                if (item.dropdown) {
+                  return (
+                    <li key={item.label} className="navbar__drawer-item">
+                      <div className="navbar__drawer-dropdown">
+                        <button className="navbar__button navbar__drawer-button">
+                          {item.label}
+                        </button>
+                        <ul className="navbar__drawer-submenu">
+                          {item.items?.map((subItem) => (
+                            <li key={subItem.label}>
+                              <button
+                                className="navbar__drawer-submenu-item"
+                                onClick={() => handleNavigation(subItem.route, subItem.action)}
+                              >
+                                {subItem.label}
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </li>
+                  );
+                }
+
+                return (
+                  <li key={item.label} className="navbar__drawer-item">
+                    <button
+                      className="navbar__button navbar__drawer-button"
+                      onClick={() => handleNavigation(item.route)}
+                    >
+                      {item.label}
+                    </button>
+                  </li>
+                );
+              })}
+              <li className="navbar__drawer-item">
+                <div className="navbar__language-switcher">
+                  {availableLanguages.map((lang) => (
+                    <button
+                      key={lang}
+                      className={`navbar__language-button ${language === lang ? 'navbar__language-button--active' : ''}`}
+                      onClick={() => setLanguage(lang)}
+                      aria-label={`Switch to ${lang.toUpperCase()}`}
+                    >
+                      {lang.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -9,6 +9,7 @@ class Sport(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     name = Column(String, nullable=False)
+    odds_api_id = Column(String, nullable=True)
 
     # Relationships
     leagues = relationship("League", back_populates="sport")

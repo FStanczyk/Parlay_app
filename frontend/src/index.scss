@@ -1,0 +1,174 @@
+/* Import centralized theme */
+@import './styles/theme';
+
+/* Import all component styles */
+@import './styles/app';
+@import './styles/navbar';
+@import './styles/footer';
+@import './styles/bet-event-panel';
+@import './styles/filters';
+@import './styles/parlay-summary';
+@import './styles/protected-route';
+@import './styles/home';
+@import './styles/generator';
+@import './styles/login';
+@import './styles/register';
+@import './styles/dashboard';
+@import './styles/text-carousel';
+@import './styles/become-expert';
+@import './styles/expert-panel';
+@import './styles/expert-plan-card';
+@import './styles/modal';
+@import './styles/manage-monetization';
+@import './styles/search-experts';
+@import './styles/my-parlays';
+@import './styles/admin-side-nav';
+@import './styles/admin-panel';
+@import './styles/add-ai-predictions';
+@import './styles/add-csv-predictions';
+@import './styles/philip-snat-models';
+@import './styles/philip-snat-model-view';
+/* Base Reset & Mobile-First Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  max-width: var(--container-max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-inline: var(--container-padding-mobile);
+
+  @media (min-width: 768px) {
+    padding-inline: var(--container-padding-tablet);
+  }
+
+  @media (min-width: 1024px) {
+    padding-inline: var(--container-padding-desktop);
+  }
+}
+
+/* Typography - Mobile-first (base: ~360-400px phones) */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-primary);
+}
+
+h1 {
+  font-size: clamp(1.75rem, 5vw, 2.5rem); /* Fluid: 28px - 40px */
+}
+
+h2 {
+  font-size: clamp(1.5rem, 4vw, 2rem); /* Fluid: 24px - 32px */
+}
+
+h3 {
+  font-size: clamp(1.25rem, 3vw, 1.75rem); /* Fluid: 20px - 28px */
+}
+
+h4 {
+  font-size: clamp(1.125rem, 2.5vw, 1.5rem); /* Fluid: 18px - 24px */
+}
+
+h5 {
+  font-size: clamp(1rem, 2vw, 1.25rem); /* Fluid: 16px - 20px */
+}
+
+h6 {
+  font-size: clamp(0.875rem, 1.5vw, 1rem); /* Fluid: 14px - 16px */
+}
+
+p {
+  margin: 0;
+}
+
+/* Links */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+
+  &:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+  }
+}
+
+/* Buttons - Base styles (components will override) */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Form Elements - Mobile-first */
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+}
+
+/* Focus Styles for Accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-primary-light);
+  color: var(--color-text-inverse);
+}
+
+/* Utility Classes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--container-padding-mobile);
+
+  /* Responsive Enhancements */
+  @media (min-width: 768px) {
+    padding: 0 var(--container-padding-tablet);
+  }
+
+  @media (min-width: 1024px) {
+    padding: 0 var(--container-padding-desktop);
+  }
+}

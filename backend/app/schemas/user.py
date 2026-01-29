@@ -1,11 +1,13 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, date
 
 
 class UserBase(BaseModel):
     email: EmailStr
     full_name: Optional[str] = None
+    country: Optional[str] = None
+    birthdate: Optional[date] = None
 
 
 class UserCreate(UserBase):
@@ -15,6 +17,7 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     id: int
     is_active: bool
+    is_admin: bool
     created_at: datetime
 
     class Config:

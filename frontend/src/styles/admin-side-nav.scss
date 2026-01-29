@@ -1,0 +1,93 @@
+.admin-side-nav {
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    var(--color-bg-secondary) 0%,
+    var(--color-bg-secondary) 70%,
+    var(--color-surface) 100%
+  );
+  border-right: 1px solid var(--color-border);
+  min-height: 100vh;
+
+  @media (min-width: 768px) {
+    width: 240px;
+    min-height: calc(100vh - var(--spacing-2xl));
+  }
+}
+
+.admin-side-nav__list {
+  list-style: none;
+  margin: 0;
+  padding: var(--spacing-md) 0;
+}
+
+.admin-side-nav__item {
+  margin: 0;
+}
+
+.admin-side-nav__button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--transition-base), opacity var(--transition-base), background-color var(--transition-base);
+  min-height: var(--touch-target-min);
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &--active {
+    background-color: var(--color-bg);
+    border-color: var(--color-primary);
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+    border-top: 1px solid var(--color-primary);
+    border-bottom: 1px solid var(--color-primary);
+    border-left: 1px solid var(--color-primary);
+    border-top-left-radius: var(--radius-sm);
+    border-bottom-left-radius: var(--radius-sm);
+    overflow: visible;
+  }
+}
+
+.admin-side-nav__chevron {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  transition: transform var(--transition-fast);
+}
+
+.admin-side-nav__label {
+  flex: 1;
+}
+
+.admin-side-nav__submenu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg-secondary);
+  border-top: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.admin-side-nav__submenu .admin-side-nav__button {
+  padding-left: calc(var(--spacing-md) * 2);
+  font-size: var(--font-size-xs);
+}
+
+.admin-side-nav__button--level-1 {
+  padding-left: calc(var(--spacing-md) * 2);
+}
+
+.admin-side-nav__button--level-2 {
+  padding-left: calc(var(--spacing-md) * 3);
+}
+
+.admin-side-nav__button--level-3 {
+  padding-left: calc(var(--spacing-md) * 4);
+}

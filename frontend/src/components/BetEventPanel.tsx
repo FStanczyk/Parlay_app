@@ -1,30 +1,23 @@
-import React, { useState } from 'react';
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  IconButton,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
-import LockOpenIcon from '@mui/icons-material/LockOpen';
-import LockIcon from '@mui/icons-material/Lock';
+import React from 'react';
+import { FiLock, FiUnlock } from 'react-icons/fi';
+import { useTranslation } from '../contexts/TranslationContext';
 import { BetEvent } from '../types/interfaces';
+import { Icon } from '../utils/Icon';
 
 interface BetEventPanelProps {
   betEvent: BetEvent;
   isLocked: boolean;
   onLockToggle: (eventId: number) => void;
+  disabled?: boolean;
 }
 
 const BetEventPanel: React.FC<BetEventPanelProps> = ({
   betEvent,
   isLocked,
   onLockToggle,
+  disabled = false,
 }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery('(max-width:600px)');
+  const { t } = useTranslation();
 
   const handleLockToggle = () => {
     onLockToggle(betEvent.id);
@@ -40,72 +33,41 @@ const BetEventPanel: React.FC<BetEventPanelProps> = ({
   };
 
   return (
-    <Card>
-      {/* Lock Icon - Top Right Corner */}
-      <IconButton
-        onClick={handleLockToggle}
-        sx={{
-          position: 'absolute',
-          top: isMobile ? 16 : 24,
-          right: isMobile ? 16 : 24,
-          color: isLocked ? '#ffffff' : 'text.secondary',
-          backgroundColor: isLocked ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '50%',
-          width: 32,
-          height: 32,
-          '&:hover': {
-            backgroundColor: isLocked ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.8)',
-          }
-        }}
-        size="small"
-      >
-        {isLocked ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
-      </IconButton>
+    <div className="bet-event-panel">
+      {!disabled && (
+        <button
+          className="bet-event-panel__lock-button"
+          onClick={handleLockToggle}
+          aria-label={isLocked ? t.betEventPanel.unlock : t.betEventPanel.lock}
+        >
+          {isLocked ? <Icon component={FiLock} aria-hidden={true} /> : <Icon component={FiUnlock} aria-hidden={true} />}
+        </button>
+      )}
 
-      <CardContent sx={{ p: isMobile ? 2 : 3 }}>
-        {/* Main Content Layout - Two Rows */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 1 : 2 }}>
-          {/* Top Row - Team names and Event */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingRight: 4.5 }}>
-            <Box sx={{ flex: 1 }}>
-              {/* Home team - Away team (bold at top left) */}
-              <Typography variant="body1" component="h3" sx={{ fontWeight: 700, color: 'text.primary', mb: isMobile ? 0 : 0.5 }}>
-                {betEvent.game?.home_team} - {betEvent.game?.away_team}
-              </Typography>
-              
-              {/* Event name (below in secondary color) */}
-              <Typography variant="body1" color="text.secondary">
-                {betEvent.event}
-              </Typography>
-            </Box>
-          </Box>
+      <div className="bet-event-panel__content">
+        <div className="bet-event-panel__header">
+          <h3 className="bet-event-panel__teams italic-title">
+            {betEvent.game?.home_team} - {betEvent.game?.away_team}
+          </h3>
+          <p className="bet-event-panel__event">{betEvent.event}</p>
+        </div>
 
-          {/* Bottom Row - Odds and League/Date */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            {/* Left side - Odds */}
-            <Box>
-              <Typography variant="body1" sx={{ color: 'text.primary', fontWeight: 500 }}>
-                {betEvent.odds}
-              </Typography>
-            </Box>
+        <div className="bet-event-panel__footer">
+          <div className="bet-event-panel__odds">
+            <span className="bet-event-panel__odds-value">{betEvent.odds}</span>
+          </div>
 
-            {/* Right side - League and Date */}
-            <Box sx={{ textAlign: 'right' }}>
-              {/* League name (top line) */}
-              <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, fontSize: '0.75rem', lineHeight: 1.2 }}>
-                {betEvent.game?.league?.name || `League ${betEvent.game?.league_id}`}
-              </Typography>
-              
-              {/* Date and time (bottom line) */}
-              <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500, fontSize: '0.75rem', lineHeight: 1.2 }}>
-                {betEvent.game?.datetime ? formatDate(betEvent.game.datetime) : 'TBD'}
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
+          <div className="bet-event-panel__meta">
+            <p className="bet-event-panel__league">
+              {betEvent.game?.league?.name || `League ${betEvent.game?.league_id}`}
+            </p>
+            <p className="bet-event-panel__date">
+              {betEvent.game?.datetime ? formatDate(betEvent.game.datetime) : t.betEventPanel.tbd}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

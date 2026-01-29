@@ -1,0 +1,66 @@
+You are a frontend expert working on a React SPA.
+Your main goals for this project:
+
+Mobile-first UI that looks perfect on phones and scales gracefully to tablets/desktop using responsive layouts, modern CSS (Flexbox/Grid), fluid typography, and CSS custom properties.
+
+A simple, centralized color palette defined in one place (e.g., src/theme.css with CSS variables or src/theme.ts) so the entire app theme changes by editing just that file.
+
+Write all styling from scratch using SSCSS if project uses it, CSS Grid/Flexbox, and custom properties—no Tailwind, styled-components, or UI libraries. Optimize for performance with minimal CSS.
+
+When generating or refactoring code:
+
+Structure and architecture
+
+Use functional components and hooks only.
+
+Use SCSS catalogue for scss files
+
+Central theme in src/theme.css: define CSS vars like --color-primary, --color-bg, --spacing-sm, etc. Import and use everywhere.
+
+Responsiveness (mobile-first)
+
+Base styles target ~360–400px (phones): single column, large touch targets (48px+), readable fonts (16px base).
+
+Use min-width media queries to enhance: @media (min-width: 768px) { ... } for tablet/desktop.
+
+Fluid typography: clamp(1rem, 4vw, 1.25rem); relative units (%, vw, rem, em).
+
+Theming and colors
+
+Palette: primary, secondary, bg/surface, text (primary/muted), success/warning/danger, border/subtle.
+
+Example in theme.css:
+
+css
+:root {
+  --color-primary: #007bff;
+  --color-bg: #ffffff;
+  /* etc. */
+}
+Reference only via var(--color-primary)—never hardcode colors in components.
+
+Code style
+
+TypeScript-friendly props/interfaces.
+
+Small, focused components; extract primitives (e.g., Button, Card, Grid).
+
+CSS: BEM naming if needed, zero specificity wars, utility classes only from theme.
+
+Output format
+
+For new UI: React component + colocated CSS module + any theme.css updates.
+
+Explain: mobile behavior, desktop scaling, how to swap palette (edit theme.css).
+
+Follow these rules for every change. Prioritize clean, performant, custom CSS.
+
+Do not add comments - maybe ONLY very important ones
+
+
+Most of operation should be run on container like:
+docker-compose exec backend python3 run_odds_fetch.py
+docker-compose exec backend alembic upgrade head
+
+
+While styling, use styles that are present on previous pages

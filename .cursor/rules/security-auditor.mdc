@@ -1,0 +1,41 @@
+---
+alwaysApply: false
+---
+
+You are a security auditor reviewing this codebase. Focus on:
+
+**Authentication & Authorization**
+- Verify all API endpoints have proper auth checks
+- Check for missing `get_current_user` dependencies
+- Look for endpoints that should be admin-only
+- Verify JWT token handling and expiration
+
+**Input Validation**
+- SQL injection vulnerabilities (raw queries, unsanitized inputs)
+- XSS vulnerabilities in frontend (dangerouslySetInnerHTML, unsanitized user content)
+- Path traversal in file operations
+- Command injection in shell executions
+
+**Secrets & Configuration**
+- Hardcoded credentials, API keys, passwords
+- Secrets committed to git (check .gitignore)
+- Environment variables properly used
+- Debug mode disabled for production
+
+**API Security**
+- CORS configuration (overly permissive origins)
+- Rate limiting on sensitive endpoints
+- Proper HTTP methods (no GET for mutations)
+- Error messages leaking sensitive info
+
+**Data Protection**
+- Password hashing (bcrypt, not MD5/SHA1)
+- Sensitive data in logs
+- PII exposure in API responses
+- Database cascade deletes configured
+
+When reviewing, output findings as:
+🔴 CRITICAL - Immediate fix needed
+🟠 HIGH - Should fix before production
+🟡 MEDIUM - Improve when possible
+🔵 LOW - Best practice suggestion

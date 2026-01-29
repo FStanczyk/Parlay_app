@@ -1,19 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Grid,
-  Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  Collapse,
-  CircularProgress,
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import { sportsApi, leaguesApi, Sport, League } from '../services/sportsLeaguesService';
+import React, { useEffect, useState } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { useTranslation } from '../contexts/TranslationContext';
+import { useAuth } from '../contexts/AuthContext';
+import { League, leaguesApi, Sport, sportsApi } from '../services/sportsLeaguesService';
+import { Icon } from '../utils/Icon';
 
 export interface FilterValues {
   selectedSport: string;
@@ -21,27 +13,32 @@ export interface FilterValues {
   minOdds: string;
   maxOdds: string;
   eventsNumber: string;
+  fromDate: string;
+  toDate: string;
 }
 
 interface FiltersProps {
   onFiltersChange: (filters: FilterValues) => void;
+  isDemo?: boolean;
 }
 
-const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
+const Filters: React.FC<FiltersProps> = ({ onFiltersChange, isDemo = false }) => {
+  const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
   const [selectedSport, setSelectedSport] = useState<string>('');
   const [selectedLeague, setSelectedLeague] = useState<string>('');
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [minOdds, setMinOdds] = useState<string>('');
   const [maxOdds, setMaxOdds] = useState<string>('');
   const [eventsNumber, setEventsNumber] = useState<string>('');
-  
-  // Data states
+  const [fromDate, setFromDate] = useState<Date | null>(null);
+  const [toDate, setToDate] = useState<Date | null>(null);
+
   const [sports, setSports] = useState<Sport[]>([]);
   const [leagues, setLeagues] = useState<League[]>([]);
   const [loadingSports, setLoadingSports] = useState(true);
   const [loadingLeagues, setLoadingLeagues] = useState(false);
 
-  // Fetch sports on component mount
   useEffect(() => {
     const fetchSports = async () => {
       try {
@@ -58,7 +55,6 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
     fetchSports();
   }, []);
 
-  // Fetch leagues when sport changes
   useEffect(() => {
     const fetchLeagues = async () => {
       if (selectedSport) {
@@ -67,7 +63,6 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
           const sportId = parseInt(selectedSport);
           const leaguesData = await leaguesApi.getAll(sportId);
           setLeagues(leaguesData);
-          // Reset selected league when sport changes
           setSelectedLeague('');
         } catch (error) {
           console.error('Error fetching leagues:', error);
@@ -83,12 +78,10 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
     fetchLeagues();
   }, [selectedSport]);
 
-  // Update parent when sport or league changes
   useEffect(() => {
     updateFilters();
-  }, [selectedSport, selectedLeague]);
+  }, [selectedSport, selectedLeague, fromDate, toDate]);
 
-  // Function to update parent component with current filter values
   const updateFilters = () => {
     const filters: FilterValues = {
       selectedSport,
@@ -96,6 +89,8 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
       minOdds,
       maxOdds,
       eventsNumber,
+      fromDate: fromDate ? fromDate.toISOString().split('T')[0] : '',
+      toDate: toDate ? toDate.toISOString().split('T')[0] : '',
     };
     console.log('Filters component sending to parent:', filters);
     onFiltersChange(filters);
@@ -103,7 +98,6 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
 
   const handleSportChange = (value: string) => {
     setSelectedSport(value);
-    // Clear league selection when sport changes
     setSelectedLeague('');
   };
 
@@ -124,286 +118,172 @@ const Filters: React.FC<FiltersProps> = ({ onFiltersChange }) => {
     setEventsNumber(value);
   };
 
-  // Handle blur events for text inputs to update parent
   const handleTextInputBlur = () => {
     updateFilters();
   };
 
-  // Clear all filters
   const handleClearFilters = () => {
     setSelectedSport('');
     setSelectedLeague('');
     setMinOdds('');
     setMaxOdds('');
     setEventsNumber('');
+    setFromDate(null);
+    setToDate(null);
   };
 
   return (
-    <Box sx={{ mb: 4 }}>
-      <Grid container spacing={2} alignItems="center">
-        <Grid item xs={12} sm={6} md={3}>
-          <FormControl fullWidth size="small">
-            <InputLabel sx={{ color: 'text.primary' }}>Sport</InputLabel>
-            <Select
-              value={selectedSport}
-              label="Sport"
-              onChange={(e) => handleSportChange(e.target.value)}
-              disabled={loadingSports}
-              sx={{
-                backgroundColor: '#ffffff',
-                borderRadius: '8px',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                },
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#000000',
-                  borderWidth: '1px',
-                },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#000000',
-                  borderWidth: '1px',
-                },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#000000',
-                  borderWidth: '1px',
-                },
-                '&.Mui-focused .MuiInputLabel-root': {
-                  color: 'text.primary',
-                },
-              }}
+    <div className="filters">
+      <h3 className="filters__label italic-title">{t.filters.filters}</h3>
+      <div className="filters__grid">
+        <div className="filters__market-selection">
+            <h4 className="filters__label italic-title">{t.filters.marketSelection}</h4>
+            <div className="filters__market-selection-content">
+              <div className="filters__field">
+              <label htmlFor="sport-select" className="filters__label">{t.filters.sport}</label>
+              <select
+                id="sport-select"
+                className="filters__select"
+                value={selectedSport}
+                onChange={(e) => handleSportChange(e.target.value)}
+                disabled={loadingSports}
+              >
+                <option value="">{t.filters.selectSport}</option>
+                {loadingSports ? (
+                  <option disabled>{t.filters.loadingSports}</option>
+                ) : (
+                  sports.map((sport) => (
+                    <option key={sport.id} value={sport.id.toString()}>
+                      {sport.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+
+            <div className="filters__field">
+              <label htmlFor="league-select" className="filters__label">{t.filters.league}</label>
+              <select
+                id="league-select"
+                className="filters__select"
+                value={selectedLeague}
+                onChange={(e) => handleLeagueChange(e.target.value)}
+                disabled={!selectedSport || loadingLeagues}
+              >
+                <option value="">{t.filters.selectLeague}</option>
+                {loadingLeagues ? (
+                  <option disabled>{t.filters.loadingLeagues}</option>
+                ) : leagues.length === 0 ? (
+                  <option disabled>
+                    {selectedSport ? t.filters.noLeaguesAvailable : t.filters.selectSportFirst}
+                  </option>
+                ) : (
+                  leagues.map((league) => (
+                    <option key={league.id} value={league.id.toString()}>
+                      {league.name}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {!isDemo && (
+          <div className="filters__field">
+            <label htmlFor="events-number" className="filters__label">{t.filters.eventsNumber}</label>
+            <input
+              id="events-number"
+              className="filters__input"
+              type="number"
+              min="1"
+              max={isAuthenticated ? "50" : "10"}
+              step="1"
+              value={eventsNumber}
+              onChange={(e) => handleEventsNumberChange(e.target.value)}
+              onBlur={handleTextInputBlur}
+            />
+          </div>
+        )}
+
+        <div className="filters__field filters__field--actions">
+          {!isDemo && (
+            <button
+              className="filters__button button_primary"
+              onClick={() => setShowMoreFilters(!showMoreFilters)}
             >
-              {loadingSports ? (
-                <MenuItem disabled>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CircularProgress size={16} />
-                    Loading sports...
-                  </Box>
-                </MenuItem>
-              ) : (
-                sports.map((sport) => (
-                  <MenuItem key={sport.id} value={sport.id.toString()}>
-                    {sport.name}
-                  </MenuItem>
-                ))
-              )}
-            </Select>
-          </FormControl>
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={3}>
-          <FormControl fullWidth size="small">
-            <InputLabel sx={{ color: 'text.primary' }}>League</InputLabel>
-            <Select
-              value={selectedLeague}
-              label="League"
-              onChange={(e) => handleLeagueChange(e.target.value)}
-              disabled={!selectedSport || loadingLeagues}
-              sx={{
-                backgroundColor: '#ffffff',
-                borderRadius: '8px',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                },
-                '& .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#000000',
-                  borderWidth: '1px',
-                },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#000000',
-                  borderWidth: '1px',
-                },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#000000',
-                  borderWidth: '1px',
-                },
-                '&.Mui-focused .MuiInputLabel-root': {
-                  color: 'text.primary',
-                },
-              }}
-            >
-              {loadingLeagues ? (
-                <MenuItem disabled>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CircularProgress size={16} />
-                    Loading leagues...
-                  </Box>
-                </MenuItem>
-              ) : leagues.length === 0 ? (
-                <MenuItem disabled>
-                  {selectedSport ? 'No leagues available' : 'Select a sport first'}
-                </MenuItem>
-              ) : (
-                leagues.map((league) => (
-                  <MenuItem key={league.id} value={league.id.toString()}>
-                    {league.name}
-                  </MenuItem>
-                ))
-              )}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Events Number"
-                type="number"
-                value={eventsNumber}
-                onChange={(e) => handleEventsNumberChange(e.target.value)}
-                onBlur={handleTextInputBlur}
-                inputProps={{ min: 1, step: 1 }}
-                sx={{
-                  backgroundColor: '#ffffff',
-                  borderRadius: '8px',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: '#000000',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: '#000000',
-                    },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#000000',
-                    borderWidth: '1px',
-                  },
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: 'text.primary',
-                  },
-                  '& .MuiInputLabel-root.Mui-focused': {
-                    color: 'text.primary',
-                  },
-                }}
-              />
-            </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={() => setShowMoreFilters(!showMoreFilters)}
-            endIcon={showMoreFilters ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            sx={{
-              backgroundColor: '#ffffff',
-              border: '1px solid #000000',
-              borderRadius: '8px',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-              color: 'text.primary',
-              fontWeight: 600,
-              '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                borderColor: '#000000',
-                color: 'text.primary',
-              }
-            }}
-          >
-            More filters
-          </Button>
-          <Button
-            variant="outlined"
-            size="small"
+              {t.filters.moreFilters}
+              {showMoreFilters ? <Icon component={FiChevronUp} aria-hidden={true} /> : <Icon component={FiChevronDown} aria-hidden={true} />}
+            </button>
+          )}
+          <button
+            className="filters__button button_primary"
             onClick={handleClearFilters}
-            sx={{
-              backgroundColor: '#ffffff',
-              border: '1px solid #000000',
-              borderRadius: '8px',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-              color: 'text.primary',
-              marginLeft: '10px',
-              fontWeight: 600,
-              '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                borderColor: '#000000',
-                color: 'text.primary',
-              }
-            }}
           >
-            Clear filters
-          </Button>
-        </Grid>
-      </Grid>
-      
-      {/* More Filters Collapse */}
-      <Collapse in={showMoreFilters} timeout="auto" unmountOnExit>
-        <Box sx={{ mt: 3 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Min Odds"
+            {t.filters.clearFilters}
+          </button>
+        </div>
+      </div>
+
+      {showMoreFilters && !isDemo && (
+        <div className="filters__more">
+          <div className="filters__grid">
+            <div className="filters__field">
+              <label htmlFor="min-odds" className="filters__label">{t.filters.minOdds}</label>
+              <input
+                id="min-odds"
+                className="filters__input"
                 type="number"
+                min="1"
+                step="0.1"
                 value={minOdds}
                 onChange={(e) => handleMinOddsChange(e.target.value)}
                 onBlur={handleTextInputBlur}
-                inputProps={{ min: 1, step: 0.1 }}
-                sx={{
-                  backgroundColor: '#ffffff',
-                  borderRadius: '8px',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: '#000000',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: '#000000',
-                    },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#000000',
-                    borderWidth: '1px',
-                  },
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: 'text.primary',
-                  },
-                  '& .MuiInputLabel-root.Mui-focused': {
-                    color: 'text.primary',
-                  },
-                }}
               />
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={3}>
-              <TextField
-                fullWidth
-                size="small"
-                label="Max Odds"
+            </div>
+
+            <div className="filters__field">
+              <label htmlFor="max-odds" className="filters__label">{t.filters.maxOdds}</label>
+              <input
+                id="max-odds"
+                className="filters__input"
                 type="number"
+                min="1"
+                step="0.1"
                 value={maxOdds}
                 onChange={(e) => handleMaxOddsChange(e.target.value)}
                 onBlur={handleTextInputBlur}
-                inputProps={{ min: 1, step: 0.1 }}
-                sx={{
-                  backgroundColor: '#ffffff',
-                  borderRadius: '8px',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                  '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                      borderColor: '#000000',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: '#000000',
-                    },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#000000',
-                    borderWidth: '1px',
-                  },
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: 'text.primary',
-                  },
-                  '& .MuiInputLabel-root.Mui-focused': {
-                    color: 'text.primary',
-                  },
-                }}
               />
-            </Grid>
-          </Grid>
-        </Box>
-      </Collapse>
-    </Box>
+            </div>
+
+            <div className="filters__field">
+              <label htmlFor="from-date" className="filters__label">{t.filters.fromDate}</label>
+              <DatePicker
+                id="from-date"
+                selected={fromDate}
+                onChange={(date: Date | null) => setFromDate(date)}
+                dateFormat="yyyy-MM-dd"
+                className="filters__datepicker"
+                wrapperClassName="filters__datepicker-wrapper"
+              />
+            </div>
+
+            <div className="filters__field">
+              <label htmlFor="to-date" className="filters__label">{t.filters.toDate}</label>
+              <DatePicker
+                id="to-date"
+                selected={toDate}
+                onChange={(date: Date | null) => setToDate(date)}
+                dateFormat="yyyy-MM-dd"
+                minDate={fromDate || undefined}
+                className="filters__datepicker"
+                wrapperClassName="filters__datepicker-wrapper"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_, func
 from datetime import datetime
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, get_current_user_optional
 from app.models.bet_event import BetEvent
 from app.models.game import Game
 from app.models.user import User
@@ -91,15 +91,53 @@ def get_random_bet_events(
     min_odds: Optional[float] = None,
     max_odds: Optional[float] = None,
     exclude_ids: Optional[str] = None,
+    from_date: Optional[str] = None,
+    to_date: Optional[str] = None,
     db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
 ):
     """Get N random bet events with game, sport and league data - frontend only access"""
     check_referer(request)
     current_time = datetime.now()
 
+    is_authenticated = current_user is not None
+
+    # Allow higher limits for authenticated users, or reasonable limits for unauthenticated users
+    if not is_authenticated:
+        if limit > 10:  # Allow up to 10 events for unauthenticated users
+            limit = 10
+        if min_odds is not None or max_odds is not None:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Advanced filters require authentication"
+            )
+        if from_date is not None or to_date is not None:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Date filters require authentication"
+            )
+
+    # Parse date filters
+    from_datetime = None
+    to_datetime = None
+
+    if from_date:
+        try:
+            from_datetime = datetime.fromisoformat(from_date)
+        except ValueError:
+            from_datetime = None
+
+    if to_date:
+        try:
+            # Add end of day time to include the entire day
+            to_datetime = datetime.fromisoformat(to_date)
+            to_datetime = to_datetime.replace(hour=23, minute=59, second=59)
+        except ValueError:
+            to_datetime = None
+
     # Debug logging
     print(
-        f"Random endpoint called with: sport_id={sport_id}, league_id={league_id}, min_odds={min_odds}, max_odds={max_odds}, limit={limit}"
+        f"Random endpoint called with: sport_id={sport_id}, league_id={league_id}, min_odds={min_odds}, max_odds={max_odds}, from_date={from_date}, to_date={to_date}, limit={limit}"
     )
 
     # Build base query with joins and time filter
@@ -110,8 +148,21 @@ def get_random_bet_events(
             joinedload(BetEvent.game).joinedload(Game.league),
         )
         .join(Game)
-        .filter(Game.datetime > current_time)
     )
+
+    # Apply date filters
+    if from_datetime and to_datetime:
+        # Both dates provided - filter by date range
+        query = query.filter(Game.datetime >= from_datetime, Game.datetime <= to_datetime)
+    elif from_datetime:
+        # Only from_date provided - filter from date onwards
+        query = query.filter(Game.datetime >= from_datetime)
+    elif to_datetime:
+        # Only to_date provided - filter up to date
+        query = query.filter(Game.datetime <= to_datetime)
+    else:
+        # No date filters - only show future events
+        query = query.filter(Game.datetime > current_time)
 
     # Apply additional filters
     if sport_id is not None:
@@ -148,6 +199,24 @@ def get_random_bet_events(
             f"Event {event.id}: Game {event.game_id}, League {event.game.league_id if event.game else 'None'}"
         )
 
+    return bet_events
+
+
+@router.get("/by-game/{game_id}", response_model=List[BetEventResponse])
+def get_bet_events_for_game(
+    game_id: int,
+    db: Session = Depends(get_db),
+):
+    """Get all bet events for a specific game"""
+    bet_events = (
+        db.query(BetEvent)
+        .options(
+            joinedload(BetEvent.game).joinedload(Game.sport),
+            joinedload(BetEvent.game).joinedload(Game.league),
+        )
+        .filter(BetEvent.game_id == game_id)
+        .all()
+    )
     return bet_events
 
 

@@ -1,0 +1,22 @@
+.admin-panel {
+  width: 100%;
+  min-height: calc(100vh - var(--spacing-2xl));
+}
+
+.admin-panel__container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+  }
+}
+
+.admin-panel__content {
+  flex: 1;
+  padding: 0;
+  width: 100%;
+  overflow-y: auto;
+  background-color: var(--color-bg);
+}

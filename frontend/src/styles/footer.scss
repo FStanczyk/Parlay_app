@@ -1,0 +1,23 @@
+.footer {
+  border-top: 1px solid var(--color-border);
+  margin-top: auto;
+}
+
+.footer__container {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: var(--spacing-lg) var(--container-padding-mobile);
+
+  @media (min-width: 768px) {
+    padding: var(--spacing-xl) var(--container-padding-tablet);
+  }
+
+  @media (min-width: 1200px) {
+    padding: var(--spacing-xl) var(--container-padding-desktop);
+  }
+}
+
+.footer__content {
+  display: flex;
+  justify-content: space-between;
+}

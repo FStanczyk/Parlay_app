@@ -47,6 +47,8 @@ class BetEventCreate(BetEventBase):
 class BetEventResponse(BetEventBase):
     id: int
     game: Optional[GameResponse] = None
+    category_name: Optional[str] = None
+    category_id: Optional[str] = None
 
     class Config:
         from_attributes = True

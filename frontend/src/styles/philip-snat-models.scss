@@ -1,0 +1,32 @@
+.philip-snat-models {
+  width: 100%;
+}
+
+.philip-snat-models__container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+
+.philip-snat-models__title {
+  font-family: var(--font-family-heading);
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: var(--font-weight-light);
+  font-style: italic;
+  color: var(--color-text-primary);
+  text-shadow: var(--text-glow-light);
+  margin: 0 0 var(--spacing-xl) 0;
+}
+
+.philip-snat-models__records {
+  margin-top: var(--spacing-xl);
+  width: 100%;
+}
+
+.philip-snat-models__empty {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  text-align: center;
+  padding: var(--spacing-xl);
+}

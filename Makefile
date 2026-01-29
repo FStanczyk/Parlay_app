@@ -6,6 +6,11 @@ help: ## Show this help message
 	@echo 'Targets:'
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
+run-soft:
+	sudo systemctl stop postgresql
+	docker-compose down
+	docker-compose up --build
+
 build: ## Build all Docker images
 	docker-compose build
 

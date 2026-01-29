@@ -12,14 +12,14 @@ export const apiCall = async <T>(
   options: RequestInit = {},
   requireAuth: boolean = true
 ): Promise<T> => {
-  const token = localStorage.getItem('access_token');
-  
+  const token = localStorage.getItem('token');
+
   if (requireAuth && !token) {
     throw new Error('No authentication token found');
   }
 
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> || {}),
@@ -28,7 +28,7 @@ export const apiCall = async <T>(
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  
+
   const response = await fetch(url, {
     ...options,
     headers,
@@ -62,6 +62,78 @@ export const apiPut = <T>(endpoint: string, data?: any, requireAuth: boolean = t
 
 export const apiDelete = <T>(endpoint: string, requireAuth: boolean = true): Promise<T> => {
   return apiCall<T>(endpoint, { method: 'DELETE' }, requireAuth);
+};
+
+export const apiPostFile = async <T>(
+  endpoint: string,
+  formData: FormData,
+  requireAuth: boolean = true
+): Promise<T> => {
+  const token = localStorage.getItem('token');
+
+  if (requireAuth && !token) {
+    throw new Error('No authentication token found');
+  }
+
+  const url = `${API_BASE_URL}${endpoint}`;
+
+  const headers: Record<string, string> = {};
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+  }
+
+  return response.json();
+};
+
+export const downloadFile = async (
+  endpoint: string,
+  filename: string,
+  requireAuth: boolean = true
+): Promise<void> => {
+  const token = localStorage.getItem('token');
+
+  if (requireAuth && !token) {
+    throw new Error('No authentication token found');
+  }
+
+  const url = `${API_BASE_URL}${endpoint}`;
+
+  const headers: Record<string, string> = {};
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const blob = await response.blob();
+  const downloadUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(downloadUrl);
 };
 
 // Public API methods (no authentication required)

@@ -1,250 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Container,
-  Typography,
-  Box,
-  Grid,
-  CircularProgress,
-  Alert,
-  Button,
-  useMediaQuery,
-  useTheme,
-  Fade,
-  Slide,
-} from '@mui/material';
-import ShuffleIcon from '@mui/icons-material/Shuffle';
+import React from 'react';
+import { FaChartLine, FaDollarSign, FaFileLines, FaUsers } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
-import { betEventsApi } from '../services/betEventsService';
-import { BetEvent } from '../types/interfaces';
-import { APP_NAME } from '../constants';
-import BetEventPanel from '../components/BetEventPanel';
-import Filters, { FilterValues } from '../components/Filters';
-import ParlaySummary from '../components/ParlaySummary';
+import FeaturePanel from '../components/FeaturePanel';
+import GeneratorComponent from '../components/Generator';
+import GoogleSignInButton from '../components/GoogleSignInButton';
+import Plan from '../components/Plan';
+import AnimationText from '../components/TextCarousel';
+import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../contexts/TranslationContext';
+import { Icon } from '../utils/Icon';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery('(max-width:600px)');
-  const [betEvents, setBetEvents] = useState<BetEvent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lockedEventIds, setLockedEventIds] = useState<Set<number>>(new Set());
-  const [filters, setFilters] = useState<FilterValues>({
-    selectedSport: '',
-    selectedLeague: '',
-    minOdds: '',
-    maxOdds: '',
-    eventsNumber: '',
-  });
+  const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    const fetchBetEvents = async () => {
-      try {
-        setLoading(true);
-        // Use random selection with default limit of 4 (no filters applied initially)
-        const events = await betEventsApi.getRandom(4);
-        setBetEvents(events);
-        // Clear locked events when fetching new events
-        setLockedEventIds(new Set());
-        console.log('Fetched initial random bet events:', events);
-      } catch (err) {
-        console.error('Error fetching bet events:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch bet events');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBetEvents();
-  }, []); // Only run once on component mount
-
-  const handleBetClick = (betEvent: BetEvent) => {
-    console.log('Bet clicked for event:', betEvent);
-    // Navigate to betting page or open betting modal
-    navigate('/dashboard');
-  };
-
-  const handleLockToggle = (eventId: number) => {
-    setLockedEventIds(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(eventId)) {
-        newSet.delete(eventId);
-      } else {
-        newSet.add(eventId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleGenerateClick = async () => {
-    try {
-      setGenerating(true);
-      const limit = filters.eventsNumber ? parseInt(filters.eventsNumber) : 4;
-      
-      // Parse sport and league IDs from filters
-      const sportId = filters.selectedSport && filters.selectedSport !== '' ? parseInt(filters.selectedSport) : undefined;
-      const leagueId = filters.selectedLeague && filters.selectedLeague !== '' ? parseInt(filters.selectedLeague) : undefined;
-      
-      // Parse odds filters
-      const minOdds = filters.minOdds ? parseFloat(filters.minOdds) : undefined;
-      const maxOdds = filters.maxOdds ? parseFloat(filters.maxOdds) : undefined;
-      
-      console.log('Generate button clicked with filters:', {
-        selectedSport: filters.selectedSport,
-        selectedLeague: filters.selectedLeague,
-        sportId,
-        leagueId,
-        minOdds,
-        maxOdds,
-        limit
-      });
-      
-      console.log('League debug:', {
-        selectedLeague: filters.selectedLeague,
-        leagueId,
-        isEmpty: filters.selectedLeague === '',
-        isUndefined: filters.selectedLeague === undefined
-      });
-      
-      // Calculate how many new events we need (total - locked events)
-      const lockedEvents = betEvents.filter(event => lockedEventIds.has(event.id));
-      const newEventsNeeded = limit - lockedEvents.length;
-      
-      let newEvents: BetEvent[] = [];
-      
-      if (newEventsNeeded > 0) {
-        // Get all currently displayed event IDs to exclude them
-        const currentEventIds = betEvents.map(event => event.id);
-        
-        // Get new random events for the remaining slots, excluding current ones
-        newEvents = await betEventsApi.getRandom(newEventsNeeded, sportId, leagueId, currentEventIds, minOdds, maxOdds);
-      }
-      
-      // Combine locked events with new events
-      const combinedEvents = [...lockedEvents, ...newEvents];
-      
-      setBetEvents(combinedEvents);
-      console.log('Generated new random bet events:', combinedEvents);
-    } catch (err) {
-      console.error('Error generating bet events:', err);
-      setError(err instanceof Error ? err.message : 'Failed to generate bet events');
-    } finally {
-      setGenerating(false);
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/hub');
     }
-  };
-
-  const handleFiltersChange = (newFilters: FilterValues) => {
-    console.log('Filters received from component:', newFilters);
-    setFilters(newFilters);
-    console.log('Filters updated:', newFilters);
-    // Filters are now only applied when Generate button is clicked
-  };
+  }, [isAuthenticated, navigate]);
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {loading && (
-        <Box display="flex" justifyContent="center" my={4}>
-          <CircularProgress sx={{ color: 'text.primary' }} />
-        </Box>
-      )}
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 4 }}>
-          {error}
-        </Alert>
-      )}
-
-      {!loading && !error && (
-        <Box>
-          <Typography variant="h4" component="h2" gutterBottom sx={{ color: 'text.primary', mb: 4, fontWeight: 600 }}>
-            Make your parlay
-          </Typography>
-          
-          {/* Filters Component */}
-          <Filters onFiltersChange={handleFiltersChange} />
-          
-          {/* Generate Button */}
-            <Box textAlign="center" mb={4}>
-              <Button
-                variant="contained"
-                size="large"
-                endIcon={<ShuffleIcon />}
-                onClick={handleGenerateClick}
-                disabled={generating}
-                sx={{
-                  color: 'text.primary',
-                  fontWeight: 600,
-                  backgroundColor: '#ffffff',
-                  borderRadius: '50px',
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                  },
-                  '&:disabled': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-                    color: 'rgba(0, 0, 0, 0.5)',
-                  }
-                }}
-              >
-                Generate
-              </Button>
-            </Box>
-          {/* ParlaySummary - Above the grid, width matches one column */}
-          <Box sx={{ mb: 4 }}>
-            <ParlaySummary betEvents={betEvents} />
-          </Box>
-          
-          <Box position="relative">
-            <Grid container spacing={isMobile ? 1.5 : 3}>
-              {betEvents.map((betEvent, index) => (
-                <Grid item xs={12} md={6} lg={4} key={betEvent.id}>
-                  <Fade in={!generating} timeout={300} style={{ transitionDelay: `${index * 50}ms` }}>
-                    <div>
-                      <BetEventPanel
-                        betEvent={betEvent}
-                        isLocked={lockedEventIds.has(betEvent.id)}
-                        onLockToggle={handleLockToggle}
-                      />
-                    </div>
-                  </Fade>
-                </Grid>
-              ))}
-            </Grid>
-            
-            {/* Subtle overlay during generation */}
-            {generating && (
-              <Fade in={generating} timeout={200}>
-                <Box
-                  position="absolute"
-                  top={0}
-                  left={0}
-                  right={0}
-                  bottom={0}
-                  bgcolor="rgba(255, 255, 255, 0.1)"
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="center"
-                  sx={{ pointerEvents: 'none' }}
-                >
-                  <CircularProgress size={40} sx={{ color: 'text.primary' }} />
-                </Box>
-              </Fade>
-            )}
-          </Box>
-
-          {betEvents.length === 0 && (
-            <Box textAlign="center" py={8}>
-              <Typography variant="h6" sx={{ color: 'text.secondary' }}>
-                No betting events available at the moment
-              </Typography>
-            </Box>
-          )}
-        </Box>
-      )}
-    </Container>
+    <div className="home">
+      <div className="home__container">
+        <section className="home__hero">
+          <div className="home__text-carousel">
+            <AnimationText texts={t.home.textCarousel} />
+          </div>
+          <h1 className="home__title">
+            <div className="home__title-text-top">{t.home.title1}</div>
+            {t.home.title2}
+          </h1>
+          <GoogleSignInButton className="home__google-button" />
+      </section>
+      <section className="home__features">
+        <FeaturePanel
+          name="Automated slips"
+          description="Build ready-to-play slips autoomatically based on your preferences"
+          icon={<Icon component={FaFileLines} aria-hidden={true} />}
+        />
+        <FeaturePanel
+          name="Expert Network"
+          description="Browse bet recommendations, search for new experts and play along with analysts"
+          icon={<Icon component={FaUsers} aria-hidden={true} />}
+        />
+        <FeaturePanel
+          name="Simulated portfolio"
+          description="Simulate and manage your betting portfoliio with technical precision"
+          icon={<Icon component={FaChartLine} aria-hidden={true} />}
+        />
+        <FeaturePanel
+          name="Expert monetization"
+          description="Share your knowledge and earn with our monetization platform"
+          icon={<Icon component={FaDollarSign} aria-hidden={true} />}
+        />
+      </section>
+      <section className="home__demo">
+        <GeneratorComponent isDemo={true} maxEvents={4} defaultEvents={4} />
+      </section>
+      <section className="home__plans">
+        <Plan id="01" name="Free" price="0$" description="Basic features" />
+        <Plan id="02" name="Pro" price="10.99$" description="Pro features" />
+        <Plan id="03" name="Elite" price="20.99$" description="Elite features" />
+      </section>
+      </div>
+    </div>
   );
 };
 

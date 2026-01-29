@@ -1,83 +1,108 @@
-import React, { useState } from 'react';
-import {
-  Container,
-  Paper,
-  TextField,
-  Button,
-  Typography,
-  Box,
-  Alert,
-} from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import GoogleSignInButton from '../components/GoogleSignInButton';
+import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../contexts/TranslationContext';
 
 const Login: React.FC = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { isAuthenticated, login } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/hub');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:8000/api/v1/auth/login', {
-        username: email, // FastAPI OAuth2PasswordRequestForm uses 'username' field
-        password,
-      });
+      const formData = new URLSearchParams();
+      formData.append('username', email);
+      formData.append('password', password);
 
-      // Store token in localStorage
-      localStorage.setItem('token', response.data.access_token);
-      navigate('/dashboard');
+      const response = await axios.post(
+        'http://localhost:8000/api/v1/auth/login',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        }
+      );
+
+      await login(response.data.access_token);
+      navigate('/hub');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed');
+      const errorData = err.response?.data;
+      if (errorData?.detail) {
+        if (Array.isArray(errorData.detail)) {
+          const errorMessages = errorData.detail.map((e: any) =>
+            `${e.loc?.join('.')}: ${e.msg}`
+          ).join(', ');
+          setError(errorMessages || t.login.validationError);
+        } else {
+          setError(errorData.detail);
+        }
+      } else {
+        setError(t.login.loginFailed);
+      }
     }
   };
 
   return (
-    <Container maxWidth="sm" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom align="center">
-          Login
-        </Typography>
-        
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
+    <div className="login">
+      <div className="login__container">
+        <div className="login__card">
+          <h1 className="login__title italic-title">{t.login.title}</h1>
 
-        <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            fullWidth
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            margin="normal"
-            required
-          />
-          <TextField
-            fullWidth
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            margin="normal"
-            required
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
-            Login
-          </Button>
-        </Box>
-      </Paper>
-    </Container>
+          {error && (
+            <div className="login__error">
+              {error}
+            </div>
+          )}
+
+          <form className="login__form" onSubmit={handleSubmit}>
+            <div className="login__field">
+              <label htmlFor="email" className="login__label">{t.login.email}</label>
+              <input
+                id="email"
+                className="login__input"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="login__field">
+              <label htmlFor="password" className="login__label">{t.login.password}</label>
+              <input
+                id="password"
+                className="login__input"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="login__submit button_primary"
+            >
+              {t.login.submit}
+            </button>
+            <GoogleSignInButton className="home__google-button" />
+          </form>
+        </div>
+      </div>
+    </div>
   );
 };
 

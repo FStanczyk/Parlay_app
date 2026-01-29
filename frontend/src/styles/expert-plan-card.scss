@@ -1,0 +1,111 @@
+.expert-plan-card {
+  position: relative;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  display: flex;
+  justify-content: space-around;
+  flex-direction: column;
+  gap: var(--spacing-md);
+
+  &__free-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: var(--color-primary);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-bg);
+    padding: var(--spacing-xs) var(--spacing-xl) var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-md) 0 0 0;
+    clip-path: polygon(0 0, 100% 0, 65% 100%, 0 100%);
+  }
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--color-border-subtle);
+
+    &:last-of-type {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+  }
+
+  &__value-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    text-align: left;
+    word-break: break-word;
+  }
+
+
+  &__value {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+    text-align: right;
+    word-break: break-word;
+  }
+}
+
+.expert-plan-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  @extend .wide__small__text;
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  &__input,
+  &__textarea {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+
+    &::placeholder {
+      color: var(--color-text-secondary);
+      opacity: 0.7;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      background-color: var(--color-bg-secondary);
+    }
+  }
+
+  &__textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+  }
+
+  &__free-badge {
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--color-primary);
+    color: var(--color-bg);
+    font-weight: var(--font-weight-bold);
+    border-radius: var(--radius-sm);
+    text-align: center;
+    letter-spacing: 1px;
+  }
+}

@@ -22,8 +22,8 @@ services:
     build: ./backend
     ports:
       - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://parlay_user:parlay_password@db:5432/parlay_db
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy

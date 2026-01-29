@@ -8,7 +8,7 @@ class League(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     sport_id = Column(Integer, ForeignKey("sports.id"), nullable=False)
-    api_league_key = Column(String, nullable=False)
+    odds_api_id = Column(String, nullable=False)
     name = Column(String, nullable=False)
     country_code = Column(String, nullable=False)
     download = Column(Boolean, nullable=False, default=False)

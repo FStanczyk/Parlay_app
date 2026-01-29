@@ -1,0 +1,101 @@
+.parlay-summary {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-secondary);
+
+  @media (max-width: 767px) {
+    padding: var(--spacing-md);
+  }
+
+  .parlay-summary__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 767px) {
+      gap: var(--spacing-lg);
+    }
+  }
+
+  .parlay-summary__odds-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+
+    @media (min-width: 768px) {
+      flex-direction: row;
+      gap: var(--spacing-xl);
+    }
+
+    @media (max-width: 767px) {
+      gap: var(--spacing-md);
+    }
+  }
+
+  .parlay-summary__odds-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .parlay-summary__label {
+    margin: 0;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-normal);
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .parlay-summary__value {
+    margin: 0;
+    font-weight: var(--font-weight-light);
+    color: var(--color-text-primary);
+    text-shadow: var(--text-glow-light);
+    font-style: italic;
+    line-height: var(--line-height-tight);
+  }
+
+  .parlay-summary__schedule-section {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+
+    @media (max-width: 767px) {
+      gap: var(--spacing-sm);
+    }
+  }
+
+  .parlay-summary__icon {
+    color: var(--color-text-primary);
+    font-size: var(--font-size-xl);
+    flex-shrink: 0;
+    margin-top: var(--spacing-xs);
+    filter: drop-shadow(var(--text-glow-subtle));
+
+    @media (max-width: 767px) {
+      font-size: var(--font-size-lg);
+      margin-top: 0;
+    }
+  }
+
+  .parlay-summary__schedule {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .parlay-summary__schedule-item {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-relaxed);
+  }
+}

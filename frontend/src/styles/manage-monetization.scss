@@ -1,0 +1,13 @@
+.manage-monetization__current-plans-grid{
+    margin-top: var(--spacing-xl);
+    display: -ms-grid;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(20%, 1fr));
+    grid-template-rows: repeat(auto-fill, 350px);
+    gap: var(--spacing-md);
+
+}
+
+.manage-monetization__section-title{
+    margin-bottom: var(--spacing-sm);
+}

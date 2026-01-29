@@ -1,102 +1,95 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Container,
-  Typography,
-  Box,
-  Card,
-  CardContent,
-  Grid,
-  Button,
-  Alert,
-} from '@mui/material';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from '../contexts/TranslationContext';
 
 const Dashboard: React.FC = () => {
-  const [user, setUser] = useState<any>(null);
-  const [error, setError] = useState('');
+  const { t } = useTranslation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
-    // For now, we'll just show a placeholder dashboard
-    // In a real app, you'd fetch user data here
-    setUser({ email: 'user@example.com', full_name: 'John Doe' });
-  }, [navigate]);
+  const { user, logout, hasSubscription, isExpert } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    logout();
     navigate('/');
   };
 
-  if (error) {
-    return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="error">{error}</Alert>
-      </Container>
-    );
-  }
-
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h4" component="h1">
-          Dashboard
-        </Typography>
-        <Button variant="outlined" onClick={handleLogout}>
-          Logout
-        </Button>
-      </Box>
+    <div className="dashboard">
+      <div className="dashboard__container">
+        <div className="dashboard__header">
+          <h1 className="dashboard__title italic-title">{t.dashboard.title}</h1>
+          <button className="dashboard__logout" onClick={handleLogout}>
+            {t.dashboard.logout}
+          </button>
+        </div>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Welcome, {user?.full_name || 'User'}!
-              </Typography>
-              <Typography color="text.secondary">
-                Email: {user?.email}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Quick Stats
-              </Typography>
-              <Typography color="text.secondary">
-                Total Parlays: 0
-              </Typography>
-              <Typography color="text.secondary">
-                Win Rate: 0%
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+        <div className="dashboard__grid">
+          <div className="dashboard__card card">
+            <h2 className="dashboard__card-title italic-title">
+              {t.dashboard.welcome}, {user?.full_name || user?.email || t.common.user}!
+            </h2>
+            <p className="dashboard__card-text">
+              {t.dashboard.email}: {user?.email}
+            </p>
+            {user?.subscription && (
+              <div className="dashboard__subscription-info">
+                <span className="dashboard__chip">
+                  {user.subscription.plan?.name || 'Free'} {t.dashboard.plan}
+                </span>
+                <p className="dashboard__card-text">
+                  {t.dashboard.status}: {user.subscription.status}
+                </p>
+              </div>
+            )}
+          </div>
 
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Recent Activity
-              </Typography>
-              <Typography color="text.secondary">
-                No recent activity to display.
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Container>
+          <div className="dashboard__card card">
+            <div className="dashboard__card-header">
+              <h2 className="dashboard__card-title italic-title">{t.dashboard.subscriptionStatus}</h2>
+              {isExpert && (
+                <span className="dashboard__expert-tag">{t.dashboard.expert}</span>
+              )}
+            </div>
+            {hasSubscription() ? (
+              <>
+                <p className="dashboard__card-text">
+                  {t.dashboard.plan}: {user?.subscription?.plan?.name}
+                </p>
+                <p className="dashboard__card-text">
+                  {t.dashboard.expires}: {user?.subscription?.current_period_end ?
+                    new Date(user.subscription.current_period_end).toLocaleDateString() :
+                    t.parlaySummary.na}
+                </p>
+                {hasSubscription(1) && (
+                  <div className="dashboard__alert dashboard__alert--success">
+                    {t.dashboard.proFeaturesAccess}
+                  </div>
+                )}
+                {hasSubscription(2) && (
+                  <div className="dashboard__alert dashboard__alert--success">
+                    {t.dashboard.fullFeaturesAccess}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p className="dashboard__card-text">
+                {t.dashboard.noActiveSubscription}
+              </p>
+            )}
+          </div>
+
+          <div className="dashboard__card card">
+            <h2 className="dashboard__card-title  italic-title">{t.dashboard.quickStats}</h2>
+            <p className="dashboard__card-text">
+              {t.dashboard.totalParlays}: 0
+            </p>
+            <p className="dashboard__card-text">
+              {t.dashboard.winRate}: 0%
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

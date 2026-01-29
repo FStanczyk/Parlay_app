@@ -1,0 +1,138 @@
+/* Filters Component Styles */
+/* Ready for redesign - add styles here using SCSS */
+
+.filters{
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    background-color: var(--color-bg-secondary);
+
+    .filters__grid{
+        margin-top: var(--spacing-md);
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--spacing-xl);
+
+
+        @media (min-width: 768px) {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .filters__market-selection{
+            border: 1px solid var(--color-border-subtle);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            background-color: var(--color-bg);
+
+            .filters__market-selection-content{
+                display: flex;
+                gap: var(--spacing-sm);
+                margin-top: var(--spacing-md);
+
+            }
+        }
+
+        label{
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-normal);
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .filters__field--actions{
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: start;
+        }
+    }
+
+    .filters__datepicker-wrapper {
+        width: 100%;
+    }
+
+    .filters__datepicker {
+        width: 100%;
+        padding: var(--spacing-xs) var(--spacing-md);
+        font-family: var(--font-family-base);
+        font-size: var(--font-size-base);
+        color: var(--color-text-primary);
+        background-color: var(--color-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        transition: border-color var(--transition-base), background-color var(--transition-base);
+
+        &:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            background-color: var(--color-bg-secondary);
+        }
+    }
+}
+
+.react-datepicker-wrapper {
+    width: 100%;
+}
+
+.react-datepicker__input-container {
+    width: 100%;
+
+    input {
+        width: 100%;
+    }
+}
+
+.react-datepicker {
+    font-family: var(--font-family-base);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-secondary);
+
+    .react-datepicker__header {
+        background-color: var(--color-bg);
+        border-bottom: 1px solid var(--color-border);
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+    }
+
+    .react-datepicker__current-month {
+        font-style: italic;
+        text-shadow: var(--text-glow-light);
+        font-family: var(--font-family-heading);
+        font-weight: var(--font-weight-light);
+        color: var(--color-text-primary);
+    }
+
+    .react-datepicker__day-name {
+        color: var(--color-text-primary);
+        font-weight: var(--font-weight-semibold);
+    }
+
+    .react-datepicker__day {
+        color: var(--color-text-primary);
+
+        &:hover {
+            background-color: var(--color-bg-secondary);
+            border-radius: var(--radius-sm);
+        }
+
+        &--selected,
+        &--keyboard-selected {
+            background-color: var(--color-primary);
+            color: var(--color-bg);
+            border-radius: var(--radius-sm);
+        }
+
+        &--disabled {
+            color: var(--color-text-secondary);
+            opacity: 0.5;
+        }
+    }
+
+    .react-datepicker__triangle {
+        border-bottom-color: var(--color-bg) !important;
+
+        &::before {
+            border-bottom-color: var(--color-border) !important;
+        }
+    }
+}

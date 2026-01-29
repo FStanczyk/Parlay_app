@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
 
     # Database
-    DATABASE_URL: str = "postgresql://parlay_user:parlay_password@db:5432/parlay_db"
+    DATABASE_URL: str
 
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = [
@@ -19,13 +19,13 @@ class Settings(BaseSettings):
     ]
 
     # Security
-    SECRET_KEY: str = "your-secret-key-change-in-production"
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
     # External API Configuration
     ODDS_API_BASE_URL: str = "https://api.the-odds-api.com/v4"
-    ODDS_API_KEY: str = "91077685ec8540c0d6018efa6226fb35"
+    ODDS_API_KEY: str
 
     class Config:
         env_file = ".env"
