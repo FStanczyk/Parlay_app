@@ -16,6 +16,7 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://localhost:3001",
         "http://frontend:3000",
+        "https://frontend-production-691a.up.railway.app",
     ]
 
     # Security
