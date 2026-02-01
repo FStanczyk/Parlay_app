@@ -301,7 +301,6 @@ def populate_events():
             .filter(League.download == True)
             .all()
         )
-        leagues = leagues[5:8]
         logger.info(f"Fetched {len(leagues)} league records with download=True")
 
         leagues_by_sport = _group_leagues_by_sport(leagues)
