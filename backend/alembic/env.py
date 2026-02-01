@@ -1,6 +1,7 @@
 from alembic import context
-from sqlalchemy import engine_from_config, pool
+from sqlalchemy import pool, create_engine
 from app.core.database import Base
+from app.core.config import settings
 from app.models.user import User  # Import all models here
 from app.models.bet_event import BetEvent
 from app.models.tipster import Tipster
@@ -10,6 +11,9 @@ from app.models.league import League
 
 # this is the Alembic Config object
 config = context.config
+
+# Override sqlalchemy.url with DATABASE_URL from environment
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 # add your model's MetaData object here
 target_metadata = Base.metadata
@@ -31,9 +35,8 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
-        prefix="sqlalchemy.",
+    connectable = create_engine(
+        settings.DATABASE_URL,
         poolclass=pool.NullPool,
     )
 
