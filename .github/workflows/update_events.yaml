@@ -28,11 +28,18 @@ jobs:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: |
-          cat > .env << EOF
-          DATABASE_URL=${DATABASE_URL}
-          SECRET_KEY=${SECRET_KEY}
-          ODDS_API_KEY=${ODDS_API_KEY}
+          cat > .env << 'EOF'
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          SECRET_KEY=${{ secrets.SECRET_KEY }}
+          ODDS_API_KEY=${{ secrets.ODDS_API_KEY }}
           EOF
+          echo "Created .env file (first 50 chars of DATABASE_URL):"
+          head -c 50 .env
+
+      - name: Verify .env file
+        run: |
+          echo "Checking .env file contents (masked):"
+          sed 's/\(DATABASE_URL=\)\([^:]*\):\([^@]*\)@/\1***:***@/' .env | head -3
 
       - name: Start backend service
         run: |
@@ -44,6 +51,10 @@ jobs:
           sleep 10
           timeout 60 bash -c 'until docker-compose ps backend | grep -q "Up"; do sleep 2; done'
           echo "Backend is ready!"
+
+      - name: Verify DATABASE_URL in container
+        run: |
+          docker-compose exec -T backend printenv DATABASE_URL | head -c 50 || echo "DATABASE_URL not found in container"
 
       - name: Run database migrations
         run: |
