@@ -63,3 +63,8 @@ export const APP_VERSION = APP_CONFIG.APP_VERSION;
 export const API_BASE_URL = APP_CONFIG.API_BASE_URL;
 export const ROUTES = APP_CONFIG.ROUTES;
 export const STORAGE_KEYS = APP_CONFIG.STORAGE_KEYS;
+
+console.log('🔍 Environment Debug:');
+console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
+console.log('API_BASE_URL:', API_BASE_URL);
+console.log('All env vars:', Object.keys(process.env).filter(key => key.startsWith('REACT_APP')));
