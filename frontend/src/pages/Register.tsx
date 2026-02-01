@@ -5,6 +5,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { useNavigate } from 'react-router-dom';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import { useTranslation } from '../contexts/TranslationContext';
+import { API_BASE_URL } from '../constants';
 
 const COUNTRIES = [
   'Afghanistan', 'Albania', 'Algeria', 'Argentina', 'Australia', 'Austria',
@@ -37,7 +38,7 @@ const Register: React.FC = () => {
     setSuccess('');
 
     try {
-      await axios.post('http://localhost:8000/api/v1/users/', {
+      await axios.post(`${API_BASE_URL}/users/`, {
         email,
         password,
         full_name: fullName,

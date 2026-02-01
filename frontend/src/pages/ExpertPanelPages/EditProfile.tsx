@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from '../../contexts/TranslationContext';
+import { API_BASE_URL } from '../../constants';
 
 const EditProfile: React.FC = () => {
   const { t } = useTranslation();
@@ -14,7 +15,7 @@ const EditProfile: React.FC = () => {
     const fetchTipster = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8000/api/v1/tipsters/me', {
+        const response = await axios.get(`${API_BASE_URL}/tipsters/me`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setDescription(response.data.description || '');
@@ -35,7 +36,7 @@ const EditProfile: React.FC = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.patch(
-        'http://localhost:8000/api/v1/tipsters/me',
+        `${API_BASE_URL}/tipsters/me`,
         { description },
         { headers: { Authorization: `Bearer ${token}` } }
       );

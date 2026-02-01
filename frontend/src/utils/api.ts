@@ -1,5 +1,5 @@
 // API utility functions for authenticated requests
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+import { API_BASE_URL } from '../constants';
 
 export interface ApiResponse<T> {
   data: T;

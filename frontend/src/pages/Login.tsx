@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
+import { API_BASE_URL } from '../constants';
 
 const Login: React.FC = () => {
   const { t } = useTranslation();
@@ -29,7 +30,7 @@ const Login: React.FC = () => {
       formData.append('password', password);
 
       const response = await axios.post(
-        'http://localhost:8000/api/v1/auth/login',
+        `${API_BASE_URL}/auth/login`,
         formData,
         {
           headers: {

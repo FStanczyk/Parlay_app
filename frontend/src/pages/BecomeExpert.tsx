@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../contexts/TranslationContext';
+import { API_BASE_URL } from '../constants';
 
 const BecomeExpert: React.FC = () => {
   const { t } = useTranslation();
@@ -20,7 +21,7 @@ const BecomeExpert: React.FC = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        'http://localhost:8000/api/v1/tipsters/',
+        `${API_BASE_URL}/tipsters/`,
         { description },
         { headers: { Authorization: `Bearer ${token}` } }
       );
