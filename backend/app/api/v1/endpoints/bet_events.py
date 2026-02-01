@@ -4,51 +4,13 @@ from sqlalchemy import and_, func
 from datetime import datetime
 from app.core.database import get_db
 from app.core.security import get_current_user, get_current_user_optional
-from app.core.config import settings
 from app.models.bet_event import BetEvent
 from app.models.game import Game
 from app.models.user import User
 from app.schemas.bet_event import BetEventCreate, BetEventResponse
 from typing import List, Optional
-from urllib.parse import urlparse
 
 router = APIRouter()
-
-
-def check_referer(request: Request):
-    """Check that request comes from our frontend or is a legitimate browser request"""
-    referer = request.headers.get("referer")
-    origin = request.headers.get("origin")
-
-    if not referer and not origin:
-        raise HTTPException(
-            status_code=403,
-            detail="Access denied.",
-        )
-
-    allowed_origins = settings.BACKEND_CORS_ORIGINS
-
-    if origin:
-        if origin in allowed_origins:
-            return
-        parsed_origin = urlparse(origin)
-        origin_domain = f"{parsed_origin.scheme}://{parsed_origin.netloc}"
-        if origin_domain in allowed_origins:
-            return
-
-    if referer:
-        parsed_referer = urlparse(referer)
-        referer_domain = f"{parsed_referer.scheme}://{parsed_referer.netloc}"
-        if referer_domain in allowed_origins:
-            return
-        for allowed in allowed_origins:
-            if allowed in referer:
-                return
-
-    raise HTTPException(
-        status_code=403,
-        detail="Access denied.",
-    )
 
 
 @router.get("/test")
@@ -58,9 +20,8 @@ def test_endpoint():
 
 
 @router.get("/", response_model=List[BetEventResponse])
-def get_bet_events(request: Request, db: Session = Depends(get_db)):
-    """Get all bet events with game, sport and league data - frontend only access"""
-    check_referer(request)
+def get_bet_events(db: Session = Depends(get_db)):
+    """Get all bet events with game, sport and league data"""
     current_time = datetime.now()
     bet_events = (
         db.query(BetEvent)
@@ -77,13 +38,11 @@ def get_bet_events(request: Request, db: Session = Depends(get_db)):
 
 @router.get("/filter", response_model=List[BetEventResponse])
 def get_bet_events_by_filters(
-    request: Request,
     sport_id: Optional[int] = None,
     league_id: Optional[int] = None,
     db: Session = Depends(get_db),
 ):
-    """Get bet events filtered by sport_id and/or league_id with game, sport and league data - frontend only access"""
-    check_referer(request)
+    """Get bet events filtered by sport_id and/or league_id with game, sport and league data"""
     current_time = datetime.now()
     query = db.query(BetEvent).options(
         joinedload(BetEvent.game).joinedload(Game.sport),
@@ -105,7 +64,6 @@ def get_bet_events_by_filters(
 
 @router.get("/random", response_model=List[BetEventResponse])
 def get_random_bet_events(
-    request: Request,
     limit: int = 10,
     sport_id: Optional[int] = None,
     league_id: Optional[int] = None,
@@ -117,8 +75,7 @@ def get_random_bet_events(
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user_optional),
 ):
-    """Get N random bet events with game, sport and league data - frontend only access"""
-    check_referer(request)
+    """Get N random bet events with game, sport and league data"""
     current_time = datetime.now()
 
     is_authenticated = current_user is not None
@@ -246,11 +203,9 @@ def get_bet_events_for_game(
 @router.get("/{bet_event_id}", response_model=BetEventResponse)
 def get_bet_event(
     bet_event_id: int,
-    request: Request,
     db: Session = Depends(get_db),
 ):
-    """Get a specific bet event by ID with game, sport and league data - frontend only access"""
-    check_referer(request)
+    """Get a specific bet event by ID with game, sport and league data"""
     bet_event = (
         db.query(BetEvent)
         .options(

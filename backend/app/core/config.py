@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
-from typing import List
+from pydantic import field_validator
+from typing import List, Union
 import os
 import json
 
@@ -13,11 +14,22 @@ class Settings(BaseSettings):
     DATABASE_URL: str
 
     # CORS - supports JSON array or comma-separated string from env
-    BACKEND_CORS_ORIGINS: List[str] = [
+    BACKEND_CORS_ORIGINS: Union[List[str], str] = [
         "http://localhost:3000",
         "http://localhost:3001",
         "http://frontend:3000",
+        "https://frontend-production-691a.up.railway.app",
     ]
+
+    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except json.JSONDecodeError:
+                return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
 
     # Security
     SECRET_KEY: str
@@ -30,17 +42,6 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        cors_env = os.getenv("BACKEND_CORS_ORIGINS")
-        if cors_env:
-            try:
-                self.BACKEND_CORS_ORIGINS = json.loads(cors_env)
-            except json.JSONDecodeError:
-                self.BACKEND_CORS_ORIGINS = [
-                    origin.strip() for origin in cors_env.split(",") if origin.strip()
-                ]
 
 
 settings = Settings()
