@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings
-from typing import List, Union
+from typing import List
 import os
+import json
 
 
 class Settings(BaseSettings):
@@ -11,12 +12,11 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str
 
-    # CORS
+    # CORS - supports JSON array or comma-separated string from env
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:3001",
         "http://frontend:3000",
-        "https://frontend-production-691a.up.railway.app",
     ]
 
     # Security
@@ -30,6 +30,17 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        cors_env = os.getenv("BACKEND_CORS_ORIGINS")
+        if cors_env:
+            try:
+                self.BACKEND_CORS_ORIGINS = json.loads(cors_env)
+            except json.JSONDecodeError:
+                self.BACKEND_CORS_ORIGINS = [
+                    origin.strip() for origin in cors_env.split(",") if origin.strip()
+                ]
 
 
 settings = Settings()

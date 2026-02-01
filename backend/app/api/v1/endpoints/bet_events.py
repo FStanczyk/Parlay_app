@@ -4,26 +4,47 @@ from sqlalchemy import and_, func
 from datetime import datetime
 from app.core.database import get_db
 from app.core.security import get_current_user, get_current_user_optional
+from app.core.config import settings
 from app.models.bet_event import BetEvent
 from app.models.game import Game
 from app.models.user import User
 from app.schemas.bet_event import BetEventCreate, BetEventResponse
 from typing import List, Optional
+from urllib.parse import urlparse
 
 router = APIRouter()
 
 
 def check_referer(request: Request):
     """Check that request comes from our frontend or is a legitimate browser request"""
-
     referer = request.headers.get("referer")
-    user_agent = request.headers.get("user-agent", "").lower()
+    origin = request.headers.get("origin")
 
-    # Allow requests from our frontend
-    if referer and "localhost:3000" in referer:
-        return
+    if not referer and not origin:
+        raise HTTPException(
+            status_code=403,
+            detail="Access denied.",
+        )
 
-    # Block everything else
+    allowed_origins = settings.BACKEND_CORS_ORIGINS
+
+    if origin:
+        if origin in allowed_origins:
+            return
+        parsed_origin = urlparse(origin)
+        origin_domain = f"{parsed_origin.scheme}://{parsed_origin.netloc}"
+        if origin_domain in allowed_origins:
+            return
+
+    if referer:
+        parsed_referer = urlparse(referer)
+        referer_domain = f"{parsed_referer.scheme}://{parsed_referer.netloc}"
+        if referer_domain in allowed_origins:
+            return
+        for allowed in allowed_origins:
+            if allowed in referer:
+                return
+
     raise HTTPException(
         status_code=403,
         detail="Access denied.",
@@ -109,12 +130,12 @@ def get_random_bet_events(
         if min_odds is not None or max_odds is not None:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Advanced filters require authentication"
+                detail="Advanced filters require authentication",
             )
         if from_date is not None or to_date is not None:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Date filters require authentication"
+                detail="Date filters require authentication",
             )
 
     # Parse date filters
@@ -153,7 +174,9 @@ def get_random_bet_events(
     # Apply date filters
     if from_datetime and to_datetime:
         # Both dates provided - filter by date range
-        query = query.filter(Game.datetime >= from_datetime, Game.datetime <= to_datetime)
+        query = query.filter(
+            Game.datetime >= from_datetime, Game.datetime <= to_datetime
+        )
     elif from_datetime:
         # Only from_date provided - filter from date onwards
         query = query.filter(Game.datetime >= from_datetime)
