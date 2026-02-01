@@ -43,6 +43,7 @@ jobs:
 
       - name: Start backend service
         run: |
+          docker-compose down backend || true
           docker-compose up -d --build --no-deps backend
 
       - name: Wait for backend to be ready
