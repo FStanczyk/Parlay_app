@@ -28,10 +28,10 @@ jobs:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: |
-          cat > .env << 'EOF'
-          DATABASE_URL=${{ secrets.DATABASE_URL }}
-          SECRET_KEY=${{ secrets.SECRET_KEY }}
-          ODDS_API_KEY=${{ secrets.ODDS_API_KEY }}
+          cat > .env << EOF
+          DATABASE_URL=${DATABASE_URL}
+          SECRET_KEY=${SECRET_KEY}
+          ODDS_API_KEY=${ODDS_API_KEY}
           EOF
           echo "Created .env file (first 50 chars of DATABASE_URL):"
           head -c 50 .env
