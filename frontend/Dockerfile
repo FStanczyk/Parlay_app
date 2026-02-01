@@ -5,13 +5,17 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies (including dev dependencies for build)
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Build the app
+# Make sure environment variables are available during build
+# Railway will inject REACT_APP_* variables automatically
+ENV REACT_APP_API_URL=${REACT_APP_API_URL}
+
+# Build the app (environment variables are embedded at build time)
 RUN npm run build
 
 # Install serve to run the app
