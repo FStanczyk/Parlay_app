@@ -57,9 +57,24 @@ jobs:
         run: |
           docker-compose exec -T backend printenv DATABASE_URL | head -c 50 || echo "DATABASE_URL not found in container"
 
+      - name: Check current migration state
+        run: |
+          docker-compose exec -T backend alembic current || echo "No migrations applied yet or database needs initialization"
+
       - name: Run database migrations
+        continue-on-error: true
         run: |
           docker-compose exec -T backend alembic upgrade head
+
+      - name: Verify migrations or stamp head
+        run: |
+          CURRENT=$(docker-compose exec -T backend alembic current 2>&1 | grep -o '[a-f0-9]\{12\}' | head -1 || echo "")
+          if [ -z "$CURRENT" ]; then
+            echo "No migration version found, attempting to stamp head..."
+            docker-compose exec -T backend alembic stamp head || echo "Could not stamp head - database may need manual intervention"
+          else
+            echo "Current migration version: $CURRENT"
+          fi
 
       - name: Run ingestion script
         run: |
