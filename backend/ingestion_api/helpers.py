@@ -99,6 +99,7 @@ class League:
         }
 
 
+@dataclass
 class Sport:
     id: int
     name: str
