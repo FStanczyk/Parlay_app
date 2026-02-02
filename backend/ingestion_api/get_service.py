@@ -55,13 +55,31 @@ def get_league_games(sport_id: int, tournament_ids, days_forward=3) -> List[Game
 
 
 def get_game_odds_events(game_id: int) -> List[BetEvent]:
+    from requests.exceptions import HTTPError
+
     url = config.betbuilder_get_markets_url
     params = {
         "match_id": str(game_id),
         "lang": config.DEFAULT_LANG,
         "target": config.DEFAULT_TARGET,
     }
-    data = req.get_json(url, params=params)
+
+    try:
+        data = req.get_json(url, params=params)
+    except HTTPError as e:
+        if e.response and e.response.status_code == 404:
+            logger.warning(f"Game {game_id} not found (404) - skipping bet events")
+            return []
+        logger.warning(
+            f"HTTP error retrieving bet events for game {game_id}: {e.response.status_code if e.response else 'unknown'} - skipping"
+        )
+        return []
+    except Exception as e:
+        logger.warning(
+            f"Error retrieving bet events for game {game_id}: {str(e)} - skipping"
+        )
+        return []
+
     if not data:
         return []
 

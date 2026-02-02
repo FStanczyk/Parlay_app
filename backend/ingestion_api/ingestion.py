@@ -241,9 +241,8 @@ def _save_bet_events_for_game(db, db_game, api_game_odds_api_id):
                 db.add(db_bet_event)
                 bet_events_added += 1
     except Exception as e:
-        logger.error(
-            f"Error retrieving bet events for game {api_game_odds_api_id}: {str(e)}",
-            exc_info=True,
+        logger.warning(
+            f"Error retrieving bet events for game {api_game_odds_api_id}: {str(e)} - skipping"
         )
 
     return bet_events_added
