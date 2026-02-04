@@ -1,0 +1,14 @@
+.image-panel {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background-color: var(--color-bg-card);
+}
+
+.image-panel__image {
+  width: 100%;
+  height: 20vh;
+  display: block;
+  object-fit: cover;
+}

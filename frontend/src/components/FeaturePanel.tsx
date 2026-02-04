@@ -10,11 +10,13 @@ interface FeaturePanelProps {
 const FeaturePanel: React.FC<FeaturePanelProps> = ({ name, description, icon }) => {
     const { t } = useTranslation();
     return (
-        <div className="feature-panel">
-            <div className="feature-panel__icon">
-                {icon}
+        <div className="feature-panel card">
+            <div className="feature-panel__header">
+                <div className="feature-panel__icon">
+                    {icon}
+                </div>
+                <div className="feature-panel__name">{name}</div>
             </div>
-            <h4 className="feature-panel__name">{name}</h4>
             {description && <p className="feature-panel__description">{description}</p>}
         </div>
     );

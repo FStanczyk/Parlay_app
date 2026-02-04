@@ -1,9 +1,11 @@
 import React from 'react';
 import { FaChartLine, FaDollarSign, FaFileLines, FaUsers } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
+import rinkImage from '../assets/images/rink.jpg';
 import FeaturePanel from '../components/FeaturePanel';
 import GeneratorComponent from '../components/Generator';
 import GoogleSignInButton from '../components/GoogleSignInButton';
+import ImagePanel from '../components/ImagePanel';
 import Plan from '../components/Plan';
 import AnimationText from '../components/TextCarousel';
 import { useAuth } from '../contexts/AuthContext';
@@ -25,15 +27,14 @@ const Home: React.FC = () => {
     <div className="home">
       <div className="home__container">
         <section className="home__hero">
+          <div className="home__title-text-top">{t.home.title1}</div>
+          <div className="home__title-text-bottom">{t.home.title2}</div>
           <div className="home__text-carousel">
             <AnimationText texts={t.home.textCarousel} />
           </div>
-          <h1 className="home__title">
-            <div className="home__title-text-top">{t.home.title1}</div>
-            {t.home.title2}
-          </h1>
           <GoogleSignInButton className="home__google-button" />
       </section>
+      <ImagePanel path={rinkImage} />
       <section className="home__features">
         <FeaturePanel
           name="Automated slips"

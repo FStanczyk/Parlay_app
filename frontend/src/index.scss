@@ -18,6 +18,7 @@
 @import './styles/become-expert';
 @import './styles/expert-panel';
 @import './styles/expert-plan-card';
+@import './styles/image-panel';
 @import './styles/modal';
 @import './styles/manage-monetization';
 @import './styles/search-experts';
@@ -42,7 +43,7 @@ html {
 body {
   margin: 0;
   font-family: var(--font-family-base);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-p-clamp);
   line-height: var(--line-height-normal);
   color: var(--color-text-primary);
   background-color: var(--color-bg);
@@ -66,10 +67,11 @@ body {
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
   font-family: var(--font-family-heading);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-normal);
   line-height: var(--line-height-tight);
   color: var(--color-text-primary);
 }
+
 
 h1 {
   font-size: clamp(1.75rem, 5vw, 2.5rem); /* Fluid: 28px - 40px */
@@ -171,4 +173,14 @@ select {
   @media (min-width: 1024px) {
     padding: 0 var(--container-padding-desktop);
   }
+}
+
+.card {
+  background: linear-gradient(
+      135deg,
+      var(--color-bg-card) 10%,
+      color-mix(in srgb, var(--color-contra) 10%, transparent) 100%
+    );
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
 }

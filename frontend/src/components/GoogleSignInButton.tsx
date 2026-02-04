@@ -20,8 +20,8 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ className = '' 
       onClick={handleGoogleSignIn}
       type="button"
     >
-      <GoogleIcon className="google-icon" aria-hidden="true" />
       {t.home.googleSignIn}
+      <GoogleIcon className="google-icon" aria-hidden="true" />
     </button>
   );
 };

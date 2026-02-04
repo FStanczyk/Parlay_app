@@ -28,45 +28,14 @@
 }
 
 .button_primary {
-  border: 1px solid var(--color-primary);
   padding: var(--spacing-sm) var(--spacing-xl);
-  color: var(--color-text-primary);
+  color: var(--color-text-negative);
+  background-color: var(--color-text-primary);
   font-weight: var(--font-weight-normal);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xl);
   transition: transform var(--transition-base), opacity var(--transition-base), background-color var(--transition-base);
   opacity: 1;
-  position: relative;
-  background: var(--color-bg);
   overflow: visible;
-}
-
-.button_primary::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: 2px;
-  right: 2px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, transparent 35%, var(--color-primary) 50%, transparent 65%, transparent 100%);
-  background-size: 200% 2px;
-  background-position: -100% 0%;
-  background-repeat: no-repeat;
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  opacity: 0;
-  transition: opacity var(--transition-base);
-  z-index: 2;
-  pointer-events: none;
-}
-
-.button_primary:hover::before {
-  opacity: 1;
-  animation: borderLoop 0.5s linear 1;
-}
-
-.button_primary:hover {
-  background-color: var(--color-bg-secondary);
-  transform: translateY(-2px);
-  opacity: 0.9;
 }
 
 .button_secondary {
@@ -174,17 +143,14 @@ input, textarea {
 /* Google Sign In Button */
 .google-signin-button {
   display: flex;
-  align-items: center;
+  align-items:safe;
   justify-content: center;
-  gap: var(--spacing-sm);
-  letter-spacing: clamp(2px, 0.5vw, 3px);
-  font-size: clamp(0.5em, 2vw, 0.775rem);
-  font-weight: var(--font-weight-bold);
-  padding: clamp(0.5rem, 1.5vw, 0.75rem) clamp(1rem, 3vw, 1.5rem);
+  gap: var(--spacing-md);
+
 
   .google-icon {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.3rem;
+    height: 1.3rem;
     flex-shrink: 0;
   }
 }
@@ -195,14 +161,17 @@ input, textarea {
 }
 
 .card {
-  border: 1px solid var(--color-border);
-  padding: var(--spacing-lg);
-  background-color: var(--color-bg-secondary);
-  border-radius: var(--radius-md);
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-card) 10%,
+    color-mix(in srgb, var(--color-contra) 10%, transparent) 100%
+  );
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
   transition: box-shadow var(--transition-base);
 
   &:hover {
-    box-shadow: var(--shadow-md);
+    box-shadow: 3px 3px 50px 0 var(--color-bg-card);
   }
 }
 

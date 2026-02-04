@@ -17,13 +17,18 @@ const Navbar: React.FC = () => {
   const { t, language, setLanguage } = useTranslation();
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    const handleChange = (event: MediaQueryListEvent | MediaQueryList) => {
+      setIsMobile(event.matches);
     };
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    handleChange(mediaQuery);
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
   }, []);
 
   const handleDrawerToggle = () => {
@@ -129,92 +134,90 @@ const Navbar: React.FC = () => {
   };
 
   const navigationItems = getNavigationItems();
+  const languageSwitcher = (
+    <div className="navbar__language-switcher">
+      {availableLanguages.map((lang) => (
+        <button
+          key={lang}
+          className={`navbar__language-button ${language === lang ? 'navbar__language-button--active' : ''}`}
+          onClick={() => setLanguage(lang)}
+          aria-label={`Switch to ${lang.toUpperCase()}`}
+        >
+          {lang.toUpperCase()}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <>
       <nav className="navbar">
-          <div className="navbar__toolbar">
-            <h3
-              className="navbar__logo"
-              onClick={() => navigate(ROUTES.HOME)}
-            >
-              {APP_NAME}
-            </h3>
+        <div className="navbar__toolbar">
+          <div className="navbar__desktop-part navbar__logo" onClick={() => navigate(ROUTES.HOME)}>
+            {APP_NAME}
+          </div>
 
-            {!isMobile && (
-              <div className="navbar__desktop-menu">
-                {navigationItems.map((item) => {
-                  if (item.dropdown) {
-                    const isExpertsDropdown = item.label === t.nav.experts;
-                    const isOpen = isExpertsDropdown ? expertsDropdownOpen : profileDropdownOpen;
-
-                    return (
-                      <div key={item.label} className="navbar__dropdown">
-                        <button
-                          className="navbar__button navbar__dropdown-toggle"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDropdownToggle(isExpertsDropdown ? 'experts' : 'profile');
-                          }}
-                        >
-                          {item.label}
-                          <Icon component={FiChevronDown} aria-hidden={true} />
-                        </button>
-                        {isAuthenticated && isOpen && (
-                          <div className="navbar__dropdown-menu">
-                            {item.items?.map((subItem) => (
-                              <button
-                                key={subItem.label}
-                                className="navbar__dropdown-item"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleNavigation(subItem.route, subItem.action);
-                                }}
-                              >
-                                {subItem.label}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  }
+          {!isMobile ? (
+            <div className="navbar__desktop-part navbar__desktop-menu">
+              {navigationItems.map((item) => {
+                if (item.dropdown) {
+                  const isExpertsDropdown = item.label === t.nav.experts;
+                  const isOpen = isExpertsDropdown ? expertsDropdownOpen : profileDropdownOpen;
 
                   return (
-                    <button
-                      key={item.label}
-                      className="navbar__button"
-                      onClick={() => handleNavigation(item.route)}
-                    >
-                      {item.label}
-                    </button>
+                    <div key={item.label} className="navbar__dropdown">
+                      <button
+                        className="navbar__button navbar__dropdown-toggle"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleDropdownToggle(isExpertsDropdown ? 'experts' : 'profile');
+                        }}
+                      >
+                        {item.label}
+                        <Icon component={FiChevronDown} aria-hidden={true} />
+                      </button>
+                      {isAuthenticated && isOpen && (
+                        <div className="navbar__dropdown-menu">
+                          {item.items?.map((subItem) => (
+                            <button
+                              key={subItem.label}
+                              className="navbar__dropdown-item"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                handleNavigation(subItem.route, subItem.action);
+                              }}
+                            >
+                              {subItem.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   );
-                })}
-                <div className="navbar__language-switcher">
-                  {availableLanguages.map((lang) => (
-                    <button
-                      key={lang}
-                      className={`navbar__language-button ${language === lang ? 'navbar__language-button--active' : ''}`}
-                      onClick={() => setLanguage(lang)}
-                      aria-label={`Switch to ${lang.toUpperCase()}`}
-                    >
-                      {lang.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+                }
 
-            {isMobile && (
-              <button
-                className="navbar__menu-button"
-                aria-label="open drawer"
-                onClick={handleDrawerToggle}
-              >
-                <Icon component={FiMenu} aria-hidden={true} />
-              </button>
-            )}
-          </div>
+                return (
+                  <button
+                    key={item.label}
+                    className="navbar__button"
+                    onClick={() => handleNavigation(item.route)}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
+              {languageSwitcher}
+            </div>
+          ) : (
+            <button
+              className="navbar__menu-button"
+              aria-label="open drawer"
+              onClick={handleDrawerToggle}
+            >
+              <Icon component={FiMenu} aria-hidden={true} />
+            </button>
+          )}
+        </div>
       </nav>
 
       {mobileOpen && (
@@ -266,20 +269,7 @@ const Navbar: React.FC = () => {
                   </li>
                 );
               })}
-              <li className="navbar__drawer-item">
-                <div className="navbar__language-switcher">
-                  {availableLanguages.map((lang) => (
-                    <button
-                      key={lang}
-                      className={`navbar__language-button ${language === lang ? 'navbar__language-button--active' : ''}`}
-                      onClick={() => setLanguage(lang)}
-                      aria-label={`Switch to ${lang.toUpperCase()}`}
-                    >
-                      {lang.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              </li>
+              <li className="navbar__drawer-item">{languageSwitcher}</li>
             </ul>
           </div>
         </div>
