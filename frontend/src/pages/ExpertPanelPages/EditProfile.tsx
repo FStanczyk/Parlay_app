@@ -6,6 +6,9 @@ import { API_BASE_URL } from '../../constants';
 const EditProfile: React.FC = () => {
   const { t } = useTranslation();
   const [description, setDescription] = useState('');
+  const [tag1, setTag1] = useState('');
+  const [tag2, setTag2] = useState('');
+  const [tag3, setTag3] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState('');
@@ -19,6 +22,9 @@ const EditProfile: React.FC = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setDescription(response.data.description || '');
+        setTag1(response.data.tag_1 || '');
+        setTag2(response.data.tag_2 || '');
+        setTag3(response.data.tag_3 || '');
       } catch (err) {
         console.error('Failed to fetch tipster data:', err);
       } finally {
@@ -37,7 +43,12 @@ const EditProfile: React.FC = () => {
       const token = localStorage.getItem('token');
       await axios.patch(
         `${API_BASE_URL}/tipsters/me`,
-        { description },
+        {
+          description,
+          tag_1: tag1,
+          tag_2: tag2,
+          tag_3: tag3
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setSuccess(t.expertPanel.saveSuccess);
@@ -79,6 +90,51 @@ const EditProfile: React.FC = () => {
             onChange={(e) => setDescription(e.target.value)}
           />
           <div className="expert-panel__sublabel">*{t.expertPanel.descriptionSublabel}</div>
+        </div>
+
+        <div className="expert-panel__field">
+          <label htmlFor="tag1" className="expert-panel__label wide__small__text">
+            Tag 1
+          </label>
+          <input
+            id="tag1"
+            type="text"
+            className="expert-panel__input"
+            maxLength={20}
+            placeholder="e.g. Soccer"
+            value={tag1}
+            onChange={(e) => setTag1(e.target.value)}
+          />
+        </div>
+
+        <div className="expert-panel__field">
+          <label htmlFor="tag2" className="expert-panel__label wide__small__text">
+            Tag 2
+          </label>
+          <input
+            id="tag2"
+            type="text"
+            className="expert-panel__input"
+            maxLength={20}
+            placeholder="e.g. NBA"
+            value={tag2}
+            onChange={(e) => setTag2(e.target.value)}
+          />
+        </div>
+
+        <div className="expert-panel__field">
+          <label htmlFor="tag3" className="expert-panel__label wide__small__text">
+            Tag 3
+          </label>
+          <input
+            id="tag3"
+            type="text"
+            className="expert-panel__input"
+            maxLength={20}
+            placeholder="e.g. High odds"
+            value={tag3}
+            onChange={(e) => setTag3(e.target.value)}
+          />
         </div>
 
         <button

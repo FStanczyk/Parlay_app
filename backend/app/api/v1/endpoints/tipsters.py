@@ -133,6 +133,12 @@ def update_my_tipster(
 
     if tipster_data.description is not None:
         tipster.description = tipster_data.description
+    if tipster_data.tag_1 is not None:
+        tipster.tag_1 = tipster_data.tag_1
+    if tipster_data.tag_2 is not None:
+        tipster.tag_2 = tipster_data.tag_2
+    if tipster_data.tag_3 is not None:
+        tipster.tag_3 = tipster_data.tag_3
 
     db.commit()
     db.refresh(tipster)

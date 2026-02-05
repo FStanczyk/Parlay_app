@@ -9,6 +9,16 @@ class TipsterCreate(BaseModel):
 
 class TipsterUpdate(BaseModel):
     description: Optional[str] = None
+    tag_1: Optional[str] = None
+    tag_2: Optional[str] = None
+    tag_3: Optional[str] = None
+
+    @field_validator('tag_1', 'tag_2', 'tag_3')
+    @classmethod
+    def validate_tag_length(cls, v):
+        if v is not None and len(v) > 20:
+            raise ValueError('Tag must be 20 characters or less')
+        return v
 
 
 class TipsterTierCreate(BaseModel):
@@ -51,6 +61,9 @@ class TipsterResponse(BaseModel):
     description: Optional[str] = None
     appreciation: int
     is_verified: bool
+    tag_1: Optional[str] = None
+    tag_2: Optional[str] = None
+    tag_3: Optional[str] = None
 
     class Config:
         from_attributes = True

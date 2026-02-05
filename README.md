@@ -201,6 +201,9 @@ docker-compose down -v
 # Start only database for development
 docker-compose -f docker-compose.dev.yml up db
 
+# Run ingestion inside backend container
+docker-compose exec backend python3 ingestion_api/ingestion.py
+
 # View logs
 docker-compose logs -f backend
 docker-compose logs -f frontend
