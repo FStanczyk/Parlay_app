@@ -104,6 +104,38 @@
     flex: 1;
   }
 
+  &__meta-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+
+    &--extra {
+      flex-direction: row;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-xs);
+    }
+  }
+
+  &__tier {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--color-primary) 20%, transparent);
+    color: var(--color-primary);
+    white-space: nowrap;
+  }
+
+  &__stake {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-weight: var(--font-weight-medium);
+    white-space: nowrap;
+  }
+
   &__league {
     margin: 0;
     font-size: var(--font-size-sm);

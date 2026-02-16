@@ -225,15 +225,16 @@ def get_results_from_event_stream(event_id: int, db=None):
                     )
 
                     if bet_event:
-                        bet_event.result = bet_result
-                        updated_count += 1
-                        logger.debug(
-                            f"Updated bet_event {uuid}: {bet_result.value} (status: {status}, price: {price})"
-                        )
-                    else:
-                        logger.warning(
-                            f"Bet event with UUID {uuid} not found in database"
-                        )
+                        if bet_event.result != bet_result:
+                            bet_event.result = bet_result
+                            updated_count += 1
+                            logger.debug(
+                                f"Updated bet_event {uuid}: {bet_result.value} (status: {status}, price: {price})"
+                            )
+                        else:
+                            logger.debug(
+                                f"Bet event {uuid} already has result {bet_result.value}, skipping"
+                            )
 
         db.commit()
         logger.info(f"Updated {updated_count} bet events for event {event_id}")

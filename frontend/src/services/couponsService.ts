@@ -1,6 +1,8 @@
 import { apiGet, apiPost } from '../utils/api';
 import { BetEvent } from '../types/interfaces';
 
+export type CouponResult = 'WON' | 'LOST' | 'PENDING' | 'VOID';
+
 export interface CouponCreate {
   name: string;
   bet_event_ids: number[];
@@ -20,6 +22,11 @@ export interface Coupon {
   user_id: number;
   name: string;
   created_at: string;
+  odds?: number | null;
+  events?: number | null;
+  result?: CouponResult | null;
+  first_event_date?: string | null;
+  last_event_date?: string | null;
   bet_events?: BetEventOnCoupon[];
 }
 

@@ -1,6 +1,8 @@
 from pydantic import BaseModel, field_validator, model_validator
 from typing import Optional, List
 from decimal import Decimal
+from datetime import datetime as dt
+from app.models.bet_event import BetResult
 
 
 class TipsterCreate(BaseModel):
@@ -76,6 +78,9 @@ class TipsterPublicResponse(BaseModel):
     appreciation: int
     description: Optional[str] = None
     is_verified: bool
+    tag_1: Optional[str] = None
+    tag_2: Optional[str] = None
+    tag_3: Optional[str] = None
     followers_count: int
     recommendations_count: int
 
@@ -83,13 +88,20 @@ class TipsterPublicResponse(BaseModel):
         from_attributes = True
 
 
-from datetime import datetime as dt
+class LeagueResponse(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
 
 class GameResponse(BaseModel):
     id: int
     datetime: dt
     home_team: str
     away_team: str
+    league: Optional[LeagueResponse] = None
 
     class Config:
         from_attributes = True
@@ -99,6 +111,7 @@ class BetEventResponse(BaseModel):
     id: int
     odds: float
     event: str
+    result: Optional[BetResult] = None
     game: Optional[GameResponse] = None
 
     class Config:

@@ -35,6 +35,8 @@ venv.bak/
 .idea/
 *.swp
 *.swo
+.agents
+.cursor
 
 # OS
 .DS_Store

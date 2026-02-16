@@ -31,6 +31,14 @@
   --color-danger: #dc3545;
   --color-info: #17a2b8;
 
+  /* Bet Result Colors */
+  --color-result-win: #22c55e;
+  --color-result-win-light: rgba(34, 197, 94, 0.15);
+  --color-result-loose: #ef4444;
+  --color-result-loose-light: rgba(239, 68, 68, 0.15);
+  --color-result-void: #f97316;
+  --color-result-void-light: rgba(249, 115, 22, 0.15);
+
   /* Border & Subtle */
   --color-border: rgba(47, 47, 47, 0.2);
   --color-border-subtle: rgba(47, 47, 47, 0.1);

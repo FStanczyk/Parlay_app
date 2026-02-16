@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Coupon } from '../services/couponsService';
 import { useTranslation } from '../contexts/TranslationContext';
-import Modal from './Modal';
+import { Coupon } from '../services/couponsService';
 import BetEventPanel from './BetEventPanel';
+import Modal from './Modal';
 
 interface CouponRowProps {
   coupon: Coupon;
@@ -21,35 +21,10 @@ const CouponRow: React.FC<CouponRowProps> = ({ coupon }) => {
     });
   };
 
-  const calculateTotalOdds = () => {
-    if (!coupon.bet_events || coupon.bet_events.length === 0) return 1;
-    return coupon.bet_events.reduce((total, betEventOnCoupon) => {
-      return total * (betEventOnCoupon.bet_event?.odds || 1);
-    }, 1);
-  };
-
-  const getFirstAndLastEventDates = () => {
-    if (!coupon.bet_events || coupon.bet_events.length === 0) {
-      return { first: null, last: null };
-    }
-
-    const dates = coupon.bet_events
-      .map((betEventOnCoupon) => betEventOnCoupon.bet_event?.game?.datetime)
-      .filter((date): date is string => date !== undefined)
-      .sort();
-
-    if (dates.length === 0) {
-      return { first: null, last: null };
-    }
-
-    return {
-      first: dates[0],
-      last: dates[dates.length - 1],
-    };
-  };
-
-  const totalOdds = calculateTotalOdds();
-  const { first, last } = getFirstAndLastEventDates();
+  const totalOdds = coupon.odds ?? 1;
+  const eventsCount = coupon.events ?? 0;
+  const first = coupon.first_event_date ?? null;
+  const last = coupon.last_event_date ?? null;
 
   const handleRowClick = () => {
     setIsModalOpen(true);
@@ -76,7 +51,7 @@ const CouponRow: React.FC<CouponRowProps> = ({ coupon }) => {
       </div>
 
       <div className="coupon-row__events-count">
-        {coupon.bet_events?.length || 0} {coupon.bet_events?.length === 1 ? t.myParlays.event : t.myParlays.events}
+        {eventsCount} {eventsCount === 1 ? t.myParlays.event : t.myParlays.events}
       </div>
 
       {first && last && (

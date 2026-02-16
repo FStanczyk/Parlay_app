@@ -20,7 +20,7 @@ from app.core.database import SessionLocal
 from app.models.sport import Sport
 from app.models.league import League
 from app.models.game import Game
-from app.models.bet_event import BetEvent
+from app.models.bet_event import BetEvent, BetResult
 
 logger = logging.getLogger(__name__)
 
@@ -387,14 +387,20 @@ def set_results():
     db = SessionLocal()
     try:
         current_time = datetime.datetime.now()
+
         games = (
             db.query(Game)
             .filter(Game.datetime < current_time)
             .filter(Game.odds_api_id.isnot(None))
+            .join(BetEvent)
+            .filter(
+                BetEvent.result.in_([BetResult.TO_RESOLVE, BetResult.UNKNOWN, None])
+            )
+            .distinct()
             .all()
         )
 
-        logger.info(f"Found {len(games)} games that have started")
+        logger.info(f"Found {len(games)} games with unresolved bet events")
 
         processed_count = 0
         error_count = 0
@@ -443,4 +449,4 @@ def set_results():
 if __name__ == "__main__":
     populate_events()
     set_results()
-    clean_old_games()
+    # clean_old_games()

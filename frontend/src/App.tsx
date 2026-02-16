@@ -17,9 +17,9 @@ import Users from './pages/AdminPanelPages/Users';
 import EditProfile from './pages/ExpertPanelPages/EditProfile';
 import ManageMonetization from './pages/ExpertPanelPages/ManageMonetization';
 import AddRecommendation from './pages/ExpertPanelPages/AddRecommendation';
+import EditRecommendation from './pages/ExpertPanelPages/EditRecommendation';
 import ManageRecommendations from './pages/ExpertPanelPages/ManageRecommendations';
 import ExpertStatistics from './pages/ExpertPanelPages/Statistics';
-import Following from './pages/Following';
 import Generator from './pages/Generator';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -28,6 +28,7 @@ import Plans from './pages/Plans';
 import Recommendations from './pages/Recommendations';
 import Register from './pages/Register';
 import SearchExperts from './pages/SearchExpertPages/SearchExperts';
+import ExpertProfile from './pages/SearchExpertPages/ExpertProfile';
 import Settings from './pages/Settings';
 import Simulator from './pages/Simulator';
 import Stats from './pages/Stats';
@@ -97,6 +98,14 @@ function App() {
                 }
               />
               <Route
+                path="/expert-panel/recommendations/edit/:id"
+                element={
+                  <ProtectedRoute>
+                    <EditRecommendation />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/expert-panel/monetization"
                 element={
                   <ProtectedRoute>
@@ -142,10 +151,10 @@ function App() {
                 }
               />
               <Route
-                path="/experts/following"
+                path="/experts/:id"
                 element={
                   <ProtectedRoute>
-                    <Following />
+                    <ExpertProfile />
                   </ProtectedRoute>
                 }
               />

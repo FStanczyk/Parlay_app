@@ -106,6 +106,9 @@ export interface TipsterPublic {
   appreciation: number;
   description: string | null;
   is_verified: boolean;
+  tag_1: string | null;
+  tag_2: string | null;
+  tag_3: string | null;
   followers_count: number;
   recommendations_count: number;
 }

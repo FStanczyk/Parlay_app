@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+from app.models.bet_event import BetResult
 
 
 class SportResponse(BaseModel):
@@ -46,6 +47,7 @@ class BetEventCreate(BetEventBase):
 
 class BetEventResponse(BetEventBase):
     id: int
+    result: Optional[BetResult] = None
     game: Optional[GameResponse] = None
     category_name: Optional[str] = None
     category_id: Optional[str] = None

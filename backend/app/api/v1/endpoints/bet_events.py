@@ -115,7 +115,7 @@ def get_random_bet_events(
 
     # Debug logging
     print(
-        f"Random endpoint called with: sport_id={sport_id}, league_id={league_id}, min_odds={min_odds}, max_odds={max_odds}, from_date={from_date}, to_date={to_date}, limit={limit}"
+        f"Random endpoint params: sport_id={sport_id}, league_id={league_id}, min_odds={min_odds}, max_odds={max_odds}, from_date={from_date}, to_date={to_date}, limit={limit}"
     )
 
     # Build base query with joins and time filter

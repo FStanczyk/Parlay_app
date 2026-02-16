@@ -60,6 +60,13 @@ export const apiPut = <T>(endpoint: string, data?: any, requireAuth: boolean = t
   }, requireAuth);
 };
 
+export const apiPatch = <T>(endpoint: string, data?: any, requireAuth: boolean = true): Promise<T> => {
+  return apiCall<T>(endpoint, {
+    method: 'PATCH',
+    body: data ? JSON.stringify(data) : undefined,
+  }, requireAuth);
+};
+
 export const apiDelete = <T>(endpoint: string, requireAuth: boolean = true): Promise<T> => {
   return apiCall<T>(endpoint, { method: 'DELETE' }, requireAuth);
 };
