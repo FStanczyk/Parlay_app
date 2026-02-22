@@ -1,0 +1,264 @@
+.top-section {
+    &__header {
+        display: flex;
+        align-items: baseline;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    &__title {
+        font-size: var(--font-size-xl);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+        margin: 0;
+    }
+
+    &__subtitle {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+    }
+
+    &__loading,
+    &__empty {
+        padding: var(--spacing-xl);
+        text-align: center;
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
+        font-style: italic;
+    }
+}
+
+/* ── Top Experts ── */
+
+.top-experts {
+    &__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+    }
+
+    &__row {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md) var(--spacing-lg);
+        background: var(--color-bg-card);
+        border-bottom: 1px solid var(--color-border-subtle);
+        cursor: pointer;
+        transition: background var(--transition-fast);
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &:hover {
+            background: color-mix(in srgb, var(--color-primary) 8%, var(--color-bg-card));
+        }
+    }
+
+    &__rank {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-secondary);
+        width: 1.5rem;
+        text-align: center;
+        flex-shrink: 0;
+
+        &--gold   { color: #f5a623; }
+        &--silver { color: #9b9b9b; }
+        &--bronze { color: #c47a3c; }
+    }
+
+    &__flag {
+        width: 24px;
+        flex-shrink: 0;
+
+        img {
+            width: 24px;
+            height: 16px;
+            object-fit: cover;
+            border-radius: 2px;
+        }
+    }
+
+    &__identity {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    &__name {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        font-weight: var(--font-weight-medium);
+        font-size: var(--font-size-sm);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__verified {
+        color: var(--color-primary);
+        font-size: var(--font-size-xs);
+        flex-shrink: 0;
+    }
+
+    &__tags {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__stats {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+        flex-shrink: 0;
+    }
+
+    &__picks {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-secondary);
+    }
+
+    &__roi {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-bold);
+
+        &--positive { color: var(--color-result-win); }
+        &--negative { color: var(--color-result-loose); }
+    }
+}
+
+/* ── Top Picks ── */
+
+.top-picks {
+    &__list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    &__card {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md) var(--spacing-lg);
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        border-left: 3px solid var(--color-result-win);
+
+        @media (max-width: 560px) {
+            grid-template-columns: auto 1fr auto;
+            grid-template-rows: auto auto;
+        }
+    }
+
+    &__odds-badge {
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-primary);
+        min-width: 3rem;
+        text-align: center;
+        background: color-mix(in srgb, var(--color-result-win) 12%, transparent);
+        border-radius: var(--radius-sm);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        line-height: 1;
+    }
+
+    &__match {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    &__teams {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+        color: var(--color-text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__vs {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-secondary);
+        margin: 0 var(--spacing-xs);
+    }
+
+    &__event {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 2px;
+
+        @media (max-width: 560px) {
+            grid-column: 2;
+        }
+    }
+
+    &__tipster {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-medium);
+        color: var(--color-primary);
+        cursor: pointer;
+        white-space: nowrap;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    &__verified {
+        color: var(--color-primary);
+        font-size: 10px;
+    }
+
+    &__date {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-secondary);
+    }
+
+    &__win-badge {
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-bold);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        background: var(--color-result-win);
+        color: #fff;
+        border-radius: var(--radius-sm);
+        letter-spacing: 0.5px;
+        flex-shrink: 0;
+
+        @media (max-width: 560px) {
+            grid-row: 1;
+            grid-column: 3;
+        }
+    }
+}

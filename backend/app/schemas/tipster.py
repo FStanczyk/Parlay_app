@@ -127,6 +127,48 @@ class TipsterTierBasic(BaseModel):
         from_attributes = True
 
 
+class TopExpertResponse(BaseModel):
+    id: int
+    full_name: Optional[str] = None
+    country: Optional[str] = None
+    is_verified: bool
+    tag_1: Optional[str] = None
+    tag_2: Optional[str] = None
+    tag_3: Optional[str] = None
+    total_picks: int
+    total_picks_won: int
+    roi: float
+
+    class Config:
+        from_attributes = True
+
+
+class TopPickResponse(BaseModel):
+    tipster_id: int
+    tipster_name: Optional[str] = None
+    tipster_verified: bool
+    event: str
+    odds: float
+    home_team: str
+    away_team: str
+    game_datetime: dt
+
+    class Config:
+        from_attributes = True
+
+
+class TipsterStatsResponse(BaseModel):
+    total_picks: int
+    total_picks_won: int
+    sum_stake: float
+    total_return: float
+    sum_odds: float
+    picks_with_description: int
+
+    class Config:
+        from_attributes = True
+
+
 class BetRecommendationCreate(BaseModel):
     bet_event_id: int
     tipster_tier_id: Optional[int] = None

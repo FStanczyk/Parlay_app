@@ -8,6 +8,8 @@ import GoogleSignInButton from '../components/GoogleSignInButton';
 import ImagePanel from '../components/ImagePanel';
 import Plan from '../components/Plan';
 import AnimationText from '../components/TextCarousel';
+import TopExpertsSection from '../components/TopExpertsSection';
+import TopPicksSection from '../components/TopPicksSection';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
 import { Icon } from '../utils/Icon';
@@ -56,6 +58,10 @@ const Home: React.FC = () => {
           description="Share your knowledge and earn with our monetization platform"
           icon={<Icon component={FaDollarSign} aria-hidden={true} />}
         />
+      </section>
+      <section className="home__top-sections">
+        <TopExpertsSection />
+        <TopPicksSection />
       </section>
       <section className="home__demo">
         <GeneratorComponent isDemo={true} maxEvents={4} defaultEvents={4} />

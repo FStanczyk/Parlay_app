@@ -15,6 +15,7 @@ export const APP_CONFIG = {
     EXPERTS_SEARCH: '/experts/search',
     EXPERTS_FOLLOWING: '/experts/following',
     EXPERTS_RECOMMENDATIONS: '/experts/recommendations',
+    EXPERTS_STATS: (id: number | string) => `/experts/${id}/stats`,
     SIMULATOR: '/simulator',
     PROFILE_DASHBOARD: '/profile/dashboard',
     PROFILE_PARLAYS: '/profile/parlays',

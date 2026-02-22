@@ -29,6 +29,7 @@ import Recommendations from './pages/Recommendations';
 import Register from './pages/Register';
 import SearchExperts from './pages/SearchExpertPages/SearchExperts';
 import ExpertProfile from './pages/SearchExpertPages/ExpertProfile';
+import ExpertStatsPage from './pages/SearchExpertPages/ExpertStatsPage';
 import Settings from './pages/Settings';
 import Simulator from './pages/Simulator';
 import Stats from './pages/Stats';
@@ -155,6 +156,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ExpertProfile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/experts/:id/stats"
+                element={
+                  <ProtectedRoute>
+                    <ExpertStatsPage />
                   </ProtectedRoute>
                 }
               />

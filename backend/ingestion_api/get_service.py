@@ -295,8 +295,8 @@ def update_tipster_stats(bet_event: BetEvent, bet_result: BetResult, db):
 
     for recommendation in recommendations:
         rec_tipster_id = recommendation.tipster_id
-        rec_odds = recommendation.bet_event.odds
-        rec_stake = recommendation.stake if recommendation.stake else 1.0
+        rec_odds = float(recommendation.bet_event.odds)
+        rec_stake = float(recommendation.stake) if recommendation.stake else 1.0
         rec_tier_id = recommendation.tipster_tier_id
         rec_has_description = (
             recommendation.tipster_description is not None

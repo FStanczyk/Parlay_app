@@ -5,6 +5,7 @@ import logging
 import sys
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from sqlalchemy import or_
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -425,7 +426,10 @@ def set_results():
             .filter(Game.odds_api_id.isnot(None))
             .join(BetEvent)
             .filter(
-                BetEvent.result.in_([BetResult.TO_RESOLVE, BetResult.UNKNOWN, None])
+                or_(
+                    BetEvent.result.in_([BetResult.TO_RESOLVE, BetResult.UNKNOWN]),
+                    BetEvent.result.is_(None),
+                )
             )
             .distinct()
             .all()
@@ -478,7 +482,7 @@ def set_results():
 
 
 if __name__ == "__main__":
-    populate_events()
+    # populate_events()
     set_results()
     clean_old_games()
     # debug_check_market_groups(11436408)

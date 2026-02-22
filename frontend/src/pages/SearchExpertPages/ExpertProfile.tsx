@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FaCheckCircle, FaHeart, FaLightbulb, FaUsers } from 'react-icons/fa';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Flag from 'react-world-flags';
 import ExpertPickPanel from '../../components/ExpertPickPanel';
 import { followApi } from '../../services/followService';
@@ -12,6 +12,7 @@ type Tab = 'current' | 'resolved';
 
 const ExpertProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [tipster, setTipster] = useState<TipsterPublic | null>(null);
   const [recommendations, setRecommendations] = useState<BetRecommendation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -143,7 +144,12 @@ const ExpertProfile: React.FC = () => {
           >
             {isFollowing ? 'Unfollow' : 'Follow'}
           </button>
-          <button className="button_primary expert-profile__action-button">Stats</button>
+          <button
+            className="button_primary expert-profile__action-button"
+            onClick={() => navigate(`/experts/${id}/stats`)}
+          >
+            Stats
+          </button>
         </div>
       </div>
 

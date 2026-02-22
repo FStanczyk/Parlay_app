@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, case
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.core.database import get_db
 from app.models.tipster import Tipster
 from app.models.tipster_tier import TipsterTier
@@ -11,6 +11,7 @@ from app.models.bet_event import BetEvent
 from app.models.game import Game
 from app.models.user import User
 from app.models.user_tipster_follow import UserTipsterFollow
+from app.models.tipster_main_stats import TipsterMainStats
 from app.schemas.tipster import (
     TipsterCreate,
     TipsterUpdate,
@@ -21,10 +22,103 @@ from app.schemas.tipster import (
     BetRecommendationCreate,
     BetRecommendationResponse,
     TipsterPublicResponse,
+    TipsterStatsResponse,
+    TopExpertResponse,
+    TopPickResponse,
 )
 from app.core.security import get_current_user
 
 router = APIRouter()
+
+
+@router.get("/leaderboard", response_model=List[TopExpertResponse])
+def get_top_experts(limit: int = Query(10, ge=1, le=50), db: Session = Depends(get_db)):
+    roi_expr = case(
+        (TipsterMainStats.sum_stake > 0,
+         (TipsterMainStats.total_return - TipsterMainStats.sum_stake) / TipsterMainStats.sum_stake * 100),
+        else_=0.0,
+    )
+
+    results = (
+        db.query(
+            Tipster.id,
+            User.full_name,
+            User.country,
+            Tipster.is_verified,
+            Tipster.tag_1,
+            Tipster.tag_2,
+            Tipster.tag_3,
+            TipsterMainStats.total_picks,
+            TipsterMainStats.total_picks_won,
+            roi_expr.label("roi"),
+        )
+        .join(User, User.id == Tipster.user_id)
+        .join(TipsterMainStats, TipsterMainStats.tipster_id == Tipster.id)
+        .filter(TipsterMainStats.total_picks > 0)
+        .order_by(roi_expr.desc())
+        .limit(limit)
+        .all()
+    )
+
+    return [
+        TopExpertResponse(
+            id=row.id,
+            full_name=row.full_name,
+            country=row.country,
+            is_verified=row.is_verified,
+            tag_1=row.tag_1,
+            tag_2=row.tag_2,
+            tag_3=row.tag_3,
+            total_picks=row.total_picks,
+            total_picks_won=row.total_picks_won,
+            roi=round(float(row.roi), 2),
+        )
+        for row in results
+    ]
+
+
+@router.get("/top-picks", response_model=List[TopPickResponse])
+def get_top_picks(limit: int = Query(10, ge=1, le=50), days: int = Query(3, ge=1, le=30), db: Session = Depends(get_db)):
+    from app.models.game import Game as GameModel
+    cutoff = datetime.now() - timedelta(days=days)
+
+    results = (
+        db.query(
+            Tipster.id.label("tipster_id"),
+            User.full_name.label("tipster_name"),
+            Tipster.is_verified.label("tipster_verified"),
+            BetEvent.event,
+            BetEvent.odds,
+            GameModel.home_team,
+            GameModel.away_team,
+            GameModel.datetime.label("game_datetime"),
+        )
+        .join(BetRecommendation, BetRecommendation.tipster_id == Tipster.id)
+        .join(User, User.id == Tipster.user_id)
+        .join(BetEvent, BetEvent.id == BetRecommendation.bet_event_id)
+        .join(GameModel, GameModel.id == BetEvent.game_id)
+        .filter(
+            BetEvent.result == "WIN",
+            GameModel.datetime >= cutoff,
+        )
+        .order_by(BetEvent.odds.desc())
+        .limit(limit)
+        .all()
+    )
+
+    return [
+        TopPickResponse(
+            tipster_id=row.tipster_id,
+            tipster_name=row.tipster_name,
+            tipster_verified=row.tipster_verified,
+            event=row.event,
+            odds=float(row.odds),
+            home_team=row.home_team,
+            away_team=row.away_team,
+            game_datetime=row.game_datetime,
+        )
+        for row in results
+    ]
 
 
 @router.get("/", response_model=List[TipsterPublicResponse])
@@ -184,6 +278,25 @@ def get_tipster_by_id(tipster_id: int, db: Session = Depends(get_db)):
         followers_count=result.followers_count,
         recommendations_count=result.recommendations_count,
     )
+
+
+@router.get("/{tipster_id}/stats", response_model=TipsterStatsResponse)
+def get_tipster_stats(tipster_id: int, db: Session = Depends(get_db)):
+    tipster = db.query(Tipster).filter(Tipster.id == tipster_id).first()
+    if not tipster:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tipster not found")
+
+    stats = db.query(TipsterMainStats).filter(TipsterMainStats.tipster_id == tipster_id).first()
+    if not stats:
+        return TipsterStatsResponse(
+            total_picks=0,
+            total_picks_won=0,
+            sum_stake=0.0,
+            total_return=0.0,
+            sum_odds=0.0,
+            picks_with_description=0,
+        )
+    return stats
 
 
 @router.get("/following/ids", response_model=List[int])
