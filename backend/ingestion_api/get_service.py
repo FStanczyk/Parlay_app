@@ -8,16 +8,24 @@ from typing import List
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from app.models.bet_event import BetResult, BetEvent
+from app.models.bet_recommendation import BetRecommendation
+from app.models.tipster_ranges import TipsterRange
+from app.models.tipster_main_stats import TipsterMainStats
+from app.models.tipster_tier_stats import TipsterTierStats
+from app.models.tipster_main_range_stats import TipsterMainRangeStats
+from app.models.tipster_tiers_range_stats import TipsterTiersRangeStats
 from ingestion_api.request_handler import req
 from ingestion_api.config import config
 from datetime import datetime, timedelta
 from ingestion_api.helpers import (
     Helpers,
     Game,
-    BetEvent,
+    BetEvent as BetEventHelper,
     Sport as SportData,
     League,
 )
+from app.core.database import SessionLocal
 
 logger = logging.getLogger(__name__)
 
@@ -57,15 +65,10 @@ def get_league_games(sport_id: int, tournament_ids, days_forward=3) -> List[Game
 def get_game_odds_events(game_id: int) -> List[BetEvent]:
     from requests.exceptions import HTTPError
 
-    url = config.betbuilder_get_markets_url
-    params = {
-        "match_id": str(game_id),
-        "lang": config.DEFAULT_LANG,
-        "target": config.DEFAULT_TARGET,
-    }
+    url = config.check_events_url(game_id)
 
     try:
-        data = req.get_json(url, params=params)
+        data = req.get_json(url)
     except HTTPError as e:
         if e.response and e.response.status_code == 404:
             logger.warning(f"Game {game_id} not found (404) - skipping bet events")
@@ -83,32 +86,62 @@ def get_game_odds_events(game_id: int) -> List[BetEvent]:
     if not data:
         return []
 
-    markets = data.get("markets", []) or []
+    _data = data.get("data", []) or []
+    if not _data:
+        return []
+
+    event = _data[0]
+    odds = event.get("odds", []) or []
+
+    market_url = config.sport_prematch_markets_url(sport_id=event.get("sportId"))
+    market_data = req.get_json(market_url)
     betEvents = []
-    for market in markets:
-        if not market:
+    logger.info(f"Processing results for game {game_id}")
+    for odd in odds:
+
+        if filter_out_market_groups(market_data, odd.get("marketId")):
             continue
-        odds = market.get("odds", []) or []
-        for odd in odds:
-            if not odd:
-                continue
 
-            price = odd.get("price")
-            if price is None:
-                continue
+        if filter_out_market_names(odd.get("marketName")):
+            continue
 
-            betEvent = BetEvent(
-                odds=float(price),
-                event=f"{market.get('name', '')} - {odd.get('name', '')}",
-                odds_api_id=odd.get("uuid"),
-                game_odds_api_id=str(game_id),
-                category_name=market.get("name"),
-                category_id=market.get("id"),
-            )
-
-            betEvents.append(betEvent)
+        betEvent = BetEvent(
+            odds=float(odd.get("price")),
+            event=f"{odd.get('marketName', '')} - {odd.get('name', '')}",
+            odds_api_id=odd.get("uuid"),
+            category_name=odd.get("marketName"),
+            category_id=odd.get("marketId"),
+        )
+        betEvents.append(betEvent)
 
     return betEvents
+
+
+def find_market_group_of_bet(market_data: dict, market_id) -> dict:
+    if not market_data:
+        return None
+    for market_group in market_data.get("data", []) or []:
+        markets = market_group.get("markets") or []
+        if market_id in markets:
+            return market_group
+    return None
+
+
+def filter_out_market_names(market_name: str) -> bool:
+    if not market_name:
+        return False
+    return any(name in market_name for name in config.MARKET_NAMES_TO_FILTER_OUT)
+
+
+def filter_out_market_groups(market_data: dict, market_id) -> bool:
+    market_group = find_market_group_of_bet(market_data, market_id)
+    if (
+        market_group
+        and market_group.get("localNames", {}).get("pl-PL", "")
+        in config.MARKET_GROUPS_TO_FILTER_OUT
+    ):
+        return True
+    return False
 
 
 def get_tournaments(sport_id: int) -> List[League]:
@@ -153,9 +186,6 @@ def get_sports_from_struct() -> List[SportData]:
 
 
 def get_results_from_event_stream(event_id: int, db=None):
-    import json
-    from app.core.database import SessionLocal
-    from app.models.bet_event import BetEvent, BetResult
 
     if db is None:
         db = SessionLocal()
@@ -231,6 +261,8 @@ def get_results_from_event_stream(event_id: int, db=None):
                             logger.debug(
                                 f"Updated bet_event {uuid}: {bet_result.value} (status: {status}, price: {price})"
                             )
+
+                            update_tipster_stats(bet_event, bet_result, db)
                         else:
                             logger.debug(
                                 f"Bet event {uuid} already has result {bet_result.value}, skipping"
@@ -249,6 +281,149 @@ def get_results_from_event_stream(event_id: int, db=None):
     finally:
         if should_close:
             db.close()
+
+
+def update_tipster_stats(bet_event: BetEvent, bet_result: BetResult, db):
+    if bet_result is None or bet_result not in [BetResult.WIN, BetResult.LOOSE]:
+        return
+
+    recommendations = (
+        db.query(BetRecommendation)
+        .filter(BetRecommendation.bet_event_id == bet_event.id)
+        .all()
+    )
+
+    for recommendation in recommendations:
+        rec_tipster_id = recommendation.tipster_id
+        rec_odds = recommendation.bet_event.odds
+        rec_stake = recommendation.stake if recommendation.stake else 1.0
+        rec_tier_id = recommendation.tipster_tier_id
+        rec_has_description = (
+            recommendation.tipster_description is not None
+            and recommendation.tipster_description.strip() != ""
+        )
+
+        rec_won = bet_result == BetResult.WIN
+        rec_return = rec_stake * rec_odds if rec_won else 0.0
+
+        main_stats = (
+            db.query(TipsterMainStats)
+            .filter(TipsterMainStats.tipster_id == rec_tipster_id)
+            .first()
+        )
+
+        if not main_stats:
+            main_stats = TipsterMainStats(
+                tipster_id=rec_tipster_id,
+                total_picks=0,
+                total_return=0,
+                total_picks_won=0,
+                sum_odds=0,
+                sum_stake=0.0,
+                picks_with_description=0,
+            )
+            db.add(main_stats)
+
+        main_stats.total_picks += 1
+        main_stats.total_picks_won += 1 if rec_won else 0
+        main_stats.sum_stake += rec_stake
+        main_stats.total_return += rec_return
+        main_stats.sum_odds += rec_odds
+        main_stats.picks_with_description += 1 if rec_has_description else 0
+
+        if rec_tier_id:
+            tier_stats = (
+                db.query(TipsterTierStats)
+                .filter(TipsterTierStats.tipster_tier_id == rec_tier_id)
+                .first()
+            )
+
+            if not tier_stats:
+                tier_stats = TipsterTierStats(
+                    tipster_id=rec_tipster_id,
+                    tipster_tier_id=rec_tier_id,
+                    total_picks=0,
+                    total_return=0,
+                    total_picks_won=0,
+                    sum_odds=0,
+                    sum_stake=0.0,
+                    picks_with_description=0,
+                )
+                db.add(tier_stats)
+
+            tier_stats.total_picks += 1
+            tier_stats.total_picks_won += 1 if rec_won else 0
+            tier_stats.sum_stake += rec_stake
+            tier_stats.total_return += rec_return
+            tier_stats.sum_odds += rec_odds
+            tier_stats.picks_with_description += 1 if rec_has_description else 0
+
+        odds_range = (
+            db.query(TipsterRange)
+            .filter(
+                TipsterRange.range_start <= rec_odds,
+                TipsterRange.range_end >= rec_odds,
+            )
+            .first()
+        )
+
+        if odds_range:
+            main_range_stats = (
+                db.query(TipsterMainRangeStats)
+                .filter(
+                    TipsterMainRangeStats.tipster_id == rec_tipster_id,
+                    TipsterMainRangeStats.range_id == odds_range.id,
+                )
+                .first()
+            )
+
+            if not main_range_stats:
+                main_range_stats = TipsterMainRangeStats(
+                    tipster_id=rec_tipster_id,
+                    range_id=odds_range.id,
+                    total_picks=0,
+                    total_return=0,
+                    total_picks_won=0,
+                    sum_stake=0.0,
+                )
+                db.add(main_range_stats)
+
+            main_range_stats.total_picks += 1
+            main_range_stats.total_picks_won += 1 if rec_won else 0
+            main_range_stats.sum_stake += rec_stake
+            main_range_stats.total_return += rec_return
+
+            if rec_tier_id:
+                tier_range_stats = (
+                    db.query(TipsterTiersRangeStats)
+                    .filter(
+                        TipsterTiersRangeStats.tipster_tier_id == rec_tier_id,
+                        TipsterTiersRangeStats.range_id == odds_range.id,
+                    )
+                    .first()
+                )
+
+                if not tier_range_stats:
+                    tier_range_stats = TipsterTiersRangeStats(
+                        tipster_id=rec_tipster_id,
+                        tipster_tier_id=rec_tier_id,
+                        range_id=odds_range.id,
+                        total_picks=0,
+                        total_return=0,
+                        total_picks_won=0,
+                        sum_stake=0.0,
+                    )
+                    db.add(tier_range_stats)
+
+                tier_range_stats.total_picks += 1
+                tier_range_stats.total_picks_won += 1 if rec_won else 0
+                tier_range_stats.sum_stake += rec_stake
+                tier_range_stats.total_return += rec_return
+
+        db.commit()
+        logger.info(
+            f"Updated stats for tipster {rec_tipster_id}, recommendation {recommendation.id}"
+        )
 
 
 def is_game_finished(event_id: int) -> bool:
@@ -275,3 +450,43 @@ def is_game_finished(event_id: int) -> bool:
             f"Error checking if game {event_id} is finished: {str(e)}", exc_info=True
         )
         return False
+
+
+def debug_check_market_groups(game_id: int):
+    url = config.check_events_url(game_id)
+    data = req.get_json(url)
+
+    if not data:
+        print(f"No data for game {game_id}")
+        return
+
+    _data = data.get("data", []) or []
+    if not _data:
+        print(f"Empty data for game {game_id}")
+        return
+
+    event = _data[0]
+    odds = event.get("odds", []) or []
+
+    market_url = config.sport_prematch_markets_url(sport_id=event.get("sportId"))
+    market_data = req.get_json(market_url)
+
+    entries = []
+    for odd in odds:
+        event_label = f"{odd.get('marketName', '')} - {odd.get('name', '')}"
+        market_group = find_market_group_of_bet(market_data, odd.get("marketId"))
+        group_name = (
+            market_group.get("localNames", {}).get("pl-PL", "N/A")
+            if market_group
+            else "N/A"
+        )
+        entries.append({"event": event_label, "group": group_name})
+
+    import os
+
+    os.makedirs("/app/temp", exist_ok=True)
+    out_path = f"/app/temp/log_markets_{game_id}.json"
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(entries, f, ensure_ascii=False, indent=2)
+
+    print(f"Saved {len(entries)} entries to {out_path}")

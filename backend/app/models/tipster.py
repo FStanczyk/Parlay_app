@@ -17,3 +17,10 @@ class Tipster(Base):
     tag_3 = Column(String(20), nullable=True)
 
     tiers = relationship("TipsterTier", back_populates="tipster")
+    main_stats = relationship("TipsterMainStats", back_populates="tipster", uselist=False)
+    tier_stats = relationship("TipsterTierStats", back_populates="tipster")
+    main_range_stats = relationship("TipsterMainRangeStats", back_populates="tipster")
+    tier_range_stats = relationship("TipsterTiersRangeStats", back_populates="tipster")
+    tier_stats = relationship("TipsterTierStats", back_populates="tipster")
+    main_range_stats = relationship("TipsterMainRangeStats", back_populates="tipster")
+    tier_range_stats = relationship("TipsterTiersRangeStats", back_populates="tipster")

@@ -11,7 +11,7 @@ class BetRecommendation(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    bet_event_id = Column(Integer, ForeignKey("bet_events.id"), nullable=False)
+    bet_event_id = Column(Integer, ForeignKey("bet_events.id", ondelete="CASCADE"), nullable=False)
     tipster_id = Column(Integer, ForeignKey("tipsters.id"), nullable=False)
     tipster_tier_id = Column(Integer, ForeignKey("tipster_tiers.id"), nullable=True)
     tipster_description = Column(String(1000), nullable=True)

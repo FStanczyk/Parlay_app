@@ -8,7 +8,7 @@ class BetEventOnCoupon(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     coupon_id = Column(Integer, ForeignKey("coupons.id", ondelete="CASCADE"), nullable=False)
-    bet_event_id = Column(Integer, ForeignKey("bet_events.id"), nullable=False)
+    bet_event_id = Column(Integer, ForeignKey("bet_events.id", ondelete="CASCADE"), nullable=False)
     is_recommendation = Column(Boolean, default=False, nullable=False)
     bet_recommendation_id = Column(Integer, ForeignKey("bet_recommendations.id"), nullable=True)
 

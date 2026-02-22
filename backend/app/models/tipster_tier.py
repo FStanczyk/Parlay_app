@@ -15,3 +15,5 @@ class TipsterTier(Base):
 
     tipster = relationship("Tipster", back_populates="tiers")
     bet_recommendations = relationship("BetRecommendation", back_populates="tipster_tier")
+    stats = relationship("TipsterTierStats", back_populates="tipster_tier", uselist=False)
+    range_stats = relationship("TipsterTiersRangeStats", back_populates="tipster_tier")

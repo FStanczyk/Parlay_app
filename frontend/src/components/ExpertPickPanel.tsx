@@ -4,9 +4,10 @@ import { BetRecommendation } from '../services/tipsterService';
 interface ExpertPickPanelProps {
   recommendation: BetRecommendation;
   resolved?: boolean;
+  ongoing?: boolean;
 }
 
-const ExpertPickPanel: React.FC<ExpertPickPanelProps> = ({ recommendation, resolved = false }) => {
+const ExpertPickPanel: React.FC<ExpertPickPanelProps> = ({ recommendation, resolved = false, ongoing = false }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const formatDate = (dateString: string) => {
@@ -38,10 +39,11 @@ const ExpertPickPanel: React.FC<ExpertPickPanelProps> = ({ recommendation, resol
   const result = recommendation.bet_event?.result;
   const resultLabel = getResultLabel(result);
   const resultClass = result ? `expert-pick-row--${result.toLowerCase()}` : '';
+  const ongoingClass = ongoing ? 'expert-pick-row--ongoing' : '';
 
   return (
     <div
-      className={`expert-pick-row ${isExpanded ? 'expert-pick-row--expanded' : ''} ${resultClass}`}
+      className={`expert-pick-row ${isExpanded ? 'expert-pick-row--expanded' : ''} ${resultClass} ${ongoingClass}`.trim()}
       onClick={toggleExpand}
     >
       <div className="expert-pick-row__main">

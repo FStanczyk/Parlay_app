@@ -8,6 +8,8 @@ import { BetRecommendation, tipsterApi } from '../../services/tipsterService';
 import '../../styles/expert-profile.scss';
 import { TipsterPublic } from '../../types/interfaces';
 
+type Tab = 'current' | 'resolved';
+
 const ExpertProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [tipster, setTipster] = useState<TipsterPublic | null>(null);
@@ -15,6 +17,7 @@ const ExpertProfile: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>('current');
 
   useEffect(() => {
     if (id) {
@@ -36,20 +39,31 @@ const ExpertProfile: React.FC = () => {
     }
   }, [id]);
 
-  const currentPicks = recommendations.filter((rec) => {
+  const isUnresolved = (result?: string) =>
+    !result || result === 'TO_RESOLVE' || result === 'UNKNOWN';
+
+  const ongoingPicks = recommendations.filter((rec) => {
     const result = rec.bet_event?.result;
-    const isInFuture = rec.bet_event?.game?.datetime
+    const isPast = rec.bet_event?.game?.datetime
+      ? new Date(rec.bet_event.game.datetime) <= new Date()
+      : false;
+    return isUnresolved(result) && isPast;
+  });
+
+  const upcomingPicks = recommendations.filter((rec) => {
+    const result = rec.bet_event?.result;
+    const isFuture = rec.bet_event?.game?.datetime
       ? new Date(rec.bet_event.game.datetime) > new Date()
       : true;
-    return (!result || result === 'TO_RESOLVE' || result === 'UNKNOWN') && isInFuture;
+    return isUnresolved(result) && isFuture;
   });
 
   const resolvedPicks = recommendations.filter((rec) => {
     const result = rec.bet_event?.result;
-    const isInPast = rec.bet_event?.game?.datetime
+    const isPast = rec.bet_event?.game?.datetime
       ? new Date(rec.bet_event.game.datetime) <= new Date()
       : false;
-    return result && result !== 'TO_RESOLVE' && result !== 'UNKNOWN' && isInPast;
+    return result && result !== 'TO_RESOLVE' && result !== 'UNKNOWN' && isPast;
   });
 
   const handleToggleFollow = async () => {
@@ -166,29 +180,55 @@ const ExpertProfile: React.FC = () => {
         </p>
       )}
 
-      <section className="expert-profile__picks">
-        <h2 className="expert-profile__picks-title">Current Picks</h2>
-        {currentPicks.length === 0 ? (
-          <div className="expert-profile__picks-empty">
-            No active picks at the moment
-          </div>
-        ) : (
-          <div className="expert-profile__picks-list">
-            {currentPicks.map((rec) => (
-              <ExpertPickPanel key={rec.id} recommendation={rec} />
-            ))}
-          </div>
-        )}
-      </section>
+      <div className="expert-profile__tabs">
+        <button
+          className={`expert-profile__tab ${activeTab === 'current' ? 'expert-profile__tab--active' : ''}`}
+          onClick={() => setActiveTab('current')}
+        >
+          Current picks
+          {(ongoingPicks.length + upcomingPicks.length) > 0 && (
+            <span className="expert-profile__tab-count">{ongoingPicks.length + upcomingPicks.length}</span>
+          )}
+        </button>
+        <button
+          className={`expert-profile__tab ${activeTab === 'resolved' ? 'expert-profile__tab--active' : ''}`}
+          onClick={() => setActiveTab('resolved')}
+        >
+          Resolved picks
+          {resolvedPicks.length > 0 && (
+            <span className="expert-profile__tab-count">{resolvedPicks.length}</span>
+          )}
+        </button>
+      </div>
 
-      {resolvedPicks.length > 0 && (
+      {activeTab === 'current' && (
         <section className="expert-profile__picks">
-          <h2 className="expert-profile__picks-title">Resolved Picks</h2>
-          <div className="expert-profile__picks-list">
-            {resolvedPicks.map((rec) => (
-              <ExpertPickPanel key={rec.id} recommendation={rec} resolved />
-            ))}
-          </div>
+          {ongoingPicks.length === 0 && upcomingPicks.length === 0 ? (
+            <div className="expert-profile__picks-empty">No active picks at the moment</div>
+          ) : (
+            <div className="expert-profile__picks-list">
+              {ongoingPicks.map((rec) => (
+                <ExpertPickPanel key={rec.id} recommendation={rec} ongoing />
+              ))}
+              {upcomingPicks.map((rec) => (
+                <ExpertPickPanel key={rec.id} recommendation={rec} />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {activeTab === 'resolved' && (
+        <section className="expert-profile__picks">
+          {resolvedPicks.length === 0 ? (
+            <div className="expert-profile__picks-empty">No resolved picks yet</div>
+          ) : (
+            <div className="expert-profile__picks-list">
+              {resolvedPicks.map((rec) => (
+                <ExpertPickPanel key={rec.id} recommendation={rec} resolved />
+              ))}
+            </div>
+          )}
         </section>
       )}
     </section>

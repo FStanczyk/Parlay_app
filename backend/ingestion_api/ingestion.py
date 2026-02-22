@@ -4,6 +4,7 @@ import datetime
 import logging
 import sys
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -13,6 +14,7 @@ from ingestion_api.get_service import (
     get_league_games,
     get_game_odds_events,
     is_game_finished,
+    debug_check_market_groups,
 )
 from ingestion_api.config import config
 from ingestion_api.request_handler import req
@@ -257,30 +259,59 @@ def _process_batch(db, sport, sport_odds_api_id, batch):
         api_games = get_league_games(sport_odds_api_id, batch, days_forward=3)
         logger.debug(f"Retrieved {len(api_games)} games from batch")
 
+        valid_games = []
         for api_game in api_games:
             if not api_game.datetime:
                 continue
-
             league = (
                 db.query(League)
                 .filter(League.odds_api_id == str(api_game.league_id))
                 .first()
             )
-
             if not league:
                 logger.warning(f"Skipping game - league {api_game.league_id} not found")
                 continue
-
             db_game, is_new = _save_game_to_db(db, api_game, sport, league)
             if is_new:
                 games_added += 1
             else:
                 games_updated += 1
-
             if api_game.odds_api_id:
-                bet_events_added += _save_bet_events_for_game(
-                    db, db_game, api_game.odds_api_id
+                valid_games.append((db_game, api_game.odds_api_id))
+
+        odds_by_game_id = {}
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = {
+                executor.submit(get_game_odds_events, int(odds_api_id)): db_game
+                for db_game, odds_api_id in valid_games
+            }
+            for future in as_completed(futures):
+                db_game = futures[future]
+                try:
+                    odds_by_game_id[db_game.id] = future.result()
+                except Exception as e:
+                    logger.warning(f"Error fetching odds for game {db_game.id}: {e}")
+
+        for db_game, _ in valid_games:
+            bet_events = odds_by_game_id.get(db_game.id, [])
+            for bet_event in bet_events:
+                existing = (
+                    db.query(BetEvent)
+                    .filter(BetEvent.odds_api_id == bet_event.odds_api_id)
+                    .first()
                 )
+                if not existing:
+                    db.add(
+                        BetEvent(
+                            odds=bet_event.odds,
+                            game_id=db_game.id,
+                            event=bet_event.event,
+                            odds_api_id=bet_event.odds_api_id,
+                            category_name=bet_event.category_name,
+                            category_id=bet_event.category_id,
+                        )
+                    )
+                    bet_events_added += 1
 
         db.commit()
     except Exception as e:
@@ -449,4 +480,5 @@ def set_results():
 if __name__ == "__main__":
     populate_events()
     set_results()
-    # clean_old_games()
+    clean_old_games()
+    # debug_check_market_groups(11436408)
