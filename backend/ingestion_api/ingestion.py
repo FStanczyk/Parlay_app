@@ -482,7 +482,7 @@ def set_results():
 
 
 if __name__ == "__main__":
-    # populate_events()
+    populate_events()
     set_results()
     clean_old_games()
     # debug_check_market_groups(11436408)
