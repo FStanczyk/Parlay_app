@@ -60,4 +60,5 @@ frontend/build/
 
 # Temporary files
 temp/
-uploads/
+uploads/# Large ML model files
+backend/philip_snat_models/nhl/pytorch_models/universal_player_model.pkl
