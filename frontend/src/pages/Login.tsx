@@ -12,13 +12,13 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, isAdmin, login } = useAuth();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && isAdmin) {
       navigate('/hub');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isAdmin, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +40,6 @@ const Login: React.FC = () => {
       );
 
       await login(response.data.access_token);
-      navigate('/hub');
     } catch (err: any) {
       const errorData = err.response?.data;
       if (errorData?.detail) {

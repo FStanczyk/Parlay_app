@@ -52,5 +52,19 @@ services:
         npm start
       "
 
+  runner:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.runner
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend/philip_snat_models:/app/philip_snat_models
+    profiles:
+      - runner
+
 volumes:
   postgres_data:

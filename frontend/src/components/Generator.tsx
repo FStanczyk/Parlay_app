@@ -24,7 +24,7 @@ const Generator: React.FC<GeneratorProps> = ({
   defaultEvents = 4
 }) => {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const [betEvents, setBetEvents] = useState<BetEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -238,7 +238,7 @@ const Generator: React.FC<GeneratorProps> = ({
                 {t.generator.generate}
                 <Icon component={FiShuffle} aria-hidden={true} />
               </button>
-              {isAuthenticated && !isDemo && (
+              {isAuthenticated && isAdmin && !isDemo && (
                 <button
                   className="button_primary generator__save-button"
                   onClick={handleSaveParlayClick}

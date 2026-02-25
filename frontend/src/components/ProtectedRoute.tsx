@@ -8,6 +8,7 @@ interface ProtectedRouteProps {
   requireSubscription?: boolean;
   requirePlan?: number;
   requireFeature?: string;
+  requireAdmin?: boolean;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
@@ -15,9 +16,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requireSubscription = false,
   requirePlan,
   requireFeature,
+  requireAdmin = false,
 }) => {
   const { t } = useTranslation();
-  const { isAuthenticated, loading, hasSubscription, hasFeature } = useAuth();
+  const { isAuthenticated, isAdmin, loading, hasSubscription, hasFeature } = useAuth();
 
   if (loading) {
     return (
@@ -31,16 +33,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" replace />;
   }
 
+  if (requireAdmin && !isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
   if (requireSubscription && !hasSubscription()) {
-    return <Navigate to="/hub" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (requirePlan && !hasSubscription(requirePlan)) {
-    return <Navigate to="/hub" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (requireFeature && !hasFeature(requireFeature)) {
-    return <Navigate to="/hub" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

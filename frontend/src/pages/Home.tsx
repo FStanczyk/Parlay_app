@@ -1,29 +1,23 @@
 import React from 'react';
-import { FaChartLine, FaDollarSign, FaFileLines, FaUsers } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import rinkImage from '../assets/images/rink.jpg';
-import FeaturePanel from '../components/FeaturePanel';
 import GeneratorComponent from '../components/Generator';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import ImagePanel from '../components/ImagePanel';
-import Plan from '../components/Plan';
 import AnimationText from '../components/TextCarousel';
-import TopExpertsSection from '../components/TopExpertsSection';
-import TopPicksSection from '../components/TopPicksSection';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
-import { Icon } from '../utils/Icon';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
 
   React.useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && isAdmin) {
       navigate('/hub');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isAdmin, navigate]);
 
   return (
     <div className="home">
@@ -37,7 +31,7 @@ const Home: React.FC = () => {
           <GoogleSignInButton className="home__google-button" />
       </section>
       <ImagePanel path={rinkImage} />
-      <section className="home__features">
+      {/* <section className="home__features">
         <FeaturePanel
           name="Automated slips"
           description="Build ready-to-play slips autoomatically based on your preferences"
@@ -58,19 +52,19 @@ const Home: React.FC = () => {
           description="Share your knowledge and earn with our monetization platform"
           icon={<Icon component={FaDollarSign} aria-hidden={true} />}
         />
-      </section>
+      </section> */}
       <section className="home__top-sections">
-        <TopExpertsSection />
-        <TopPicksSection />
+        {/* <TopExpertsSection /> */}
+        {/* <TopPicksSection /> */}
       </section>
       <section className="home__demo">
         <GeneratorComponent isDemo={true} maxEvents={4} defaultEvents={4} />
       </section>
-      <section className="home__plans">
+      {/* <section className="home__plans">
         <Plan id="01" name="Free" price="0$" description="Basic features" />
         <Plan id="02" name="Pro" price="10.99$" description="Pro features" />
         <Plan id="03" name="Elite" price="20.99$" description="Elite features" />
-      </section>
+      </section> */}
       </div>
     </div>
   );

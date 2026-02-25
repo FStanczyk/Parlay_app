@@ -12,19 +12,18 @@ const PhilipSnatModels: React.FC = () => {
     const fetchFiles = async () => {
       try {
         const files = await apiGet<Array<{
-          id: number;
+          id: string;
           name: string;
-          date: string;
-          sport: { name: string };
-          path: string;
-        }>>('/philip-snat/prediction-files');
+          date: string | null;
+          sport: string;
+        }>>('/philip-snat/prediction-files', false);
 
         const records: CsvRecord[] = files.map(file => ({
-          id: file.id.toString(),
+          id: file.id,
           fileName: file.name,
-          sport: file.sport.name,
-          date: file.date,
-          storedFilename: file.path.split('/').pop() || '',
+          sport: file.sport,
+          date: file.date || '',
+          storedFilename: file.name,
         }));
 
         setCsvRecords(records);

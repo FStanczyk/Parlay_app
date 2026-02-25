@@ -13,7 +13,7 @@ const Navbar: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [expertsDropdownOpen, setExpertsDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const { isAuthenticated, user, logout, isExpert } = useAuth();
+  const { isAuthenticated, isAdmin, user, logout, isExpert } = useAuth();
   const { t, language, setLanguage } = useTranslation();
 
   useEffect(() => {
@@ -82,6 +82,7 @@ const Navbar: React.FC = () => {
   const getNavigationItems = (): Array<{
     label: string;
     route?: string;
+    action?: string;
     dropdown?: boolean;
     items?: Array<{ label: string; route?: string; action?: string }>;
   }> => {
@@ -91,10 +92,16 @@ const Navbar: React.FC = () => {
       return [
         philipSnatModelsItem,
         { label: t.nav.generator, route: ROUTES.GENERATOR },
-        { label: t.nav.plans, route: ROUTES.PLANS },
-        { label: t.nav.becomeExpert, route: ROUTES.BECOME_EXPERT },
         { label: t.nav.login, route: ROUTES.LOGIN },
         { label: t.nav.register, route: ROUTES.REGISTER },
+      ];
+    }
+
+    if (!isAdmin) {
+      return [
+        philipSnatModelsItem,
+        { label: t.nav.generator, route: ROUTES.GENERATOR },
+        { label: t.nav.logout, action: 'logout' },
       ];
     }
 
@@ -200,7 +207,7 @@ const Navbar: React.FC = () => {
                   <button
                     key={item.label}
                     className="navbar__button"
-                    onClick={() => handleNavigation(item.route)}
+                    onClick={() => handleNavigation(item.route, item.action)}
                   >
                     {item.label}
                   </button>
@@ -262,7 +269,7 @@ const Navbar: React.FC = () => {
                   <li key={item.label} className="navbar__drawer-item">
                     <button
                       className="navbar__button navbar__drawer-button"
-                      onClick={() => handleNavigation(item.route)}
+                      onClick={() => handleNavigation(item.route, item.action)}
                     >
                       {item.label}
                     </button>

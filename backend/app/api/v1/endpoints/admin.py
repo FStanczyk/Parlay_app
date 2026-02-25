@@ -1,19 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from fastapi.responses import FileResponse
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 import csv
 import io
+import re
 from pathlib import Path
-from datetime import datetime, date as date_type
+from datetime import datetime
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.user import User
 from app.models.philip_snat_sport import PhilipSnatSport
-from app.models.philip_snat_prediction_file import PhilipSnatPredictionFile
-from app.schemas.philip_snat import (
-    PhilipSnatSportResponse,
-    PhilipSnatPredictionFileResponse,
-)
+from app.schemas.philip_snat import PhilipSnatSportResponse
+
+PREDICTIONS_DIR = Path("philip_snat_models/predictions")
 
 router = APIRouter()
 
@@ -122,38 +121,22 @@ async def list_uploads_admin(current_user: User = Depends(require_admin)):
 
 
 @router.get("/philip-snat/prediction-files")
-async def get_prediction_files(
-    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
-):
-    files = (
-        db.query(PhilipSnatPredictionFile)
-        .options(joinedload(PhilipSnatPredictionFile.sport_rel))
-        .order_by(PhilipSnatPredictionFile.created_at.desc())
-        .all()
-    )
-
+async def get_prediction_files():
     result = []
-    for file in files:
-        result.append(
-            {
-                "id": file.id,
-                "path": file.path,
-                "name": file.name,
-                "date": file.date.isoformat() if file.date else None,
-                "sport_id": file.sport_id,
-                "created_at": file.created_at.isoformat() if file.created_at else None,
-                "updated_at": file.updated_at.isoformat() if file.updated_at else None,
-                "sport": (
-                    {
-                        "id": file.sport_rel.id,
-                        "name": file.sport_rel.name,
-                        "sport": file.sport_rel.sport,
-                    }
-                    if file.sport_rel
-                    else None
-                ),
-            }
-        )
+    pattern = re.compile(r"^(.+)-(\d{4}-\d{2}-\d{2})\.csv$")
+
+    if PREDICTIONS_DIR.exists():
+        for file_path in sorted(PREDICTIONS_DIR.iterdir(), reverse=True):
+            if file_path.is_file() and file_path.suffix == ".csv":
+                match = pattern.match(file_path.name)
+                sport = match.group(1) if match else file_path.stem
+                date = match.group(2) if match else None
+                result.append({
+                    "id": file_path.stem,
+                    "name": file_path.name,
+                    "sport": sport,
+                    "date": date,
+                })
 
     return result
 
@@ -236,47 +219,32 @@ async def download_file(filename: str, current_user: User = Depends(get_current_
 
 
 @router.get("/philip-snat/prediction-files/{file_id}/data")
-async def get_prediction_file_data(
-    file_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    prediction_file = (
-        db.query(PhilipSnatPredictionFile)
-        .options(joinedload(PhilipSnatPredictionFile.sport_rel))
-        .filter(PhilipSnatPredictionFile.id == file_id)
-        .first()
-    )
+async def get_prediction_file_data(file_id: str):
+    if ".." in file_id or "/" in file_id or "\\" in file_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file id")
 
-    if not prediction_file:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="File not found"
-        )
-
-    file_path = Path(prediction_file.path)
+    file_path = PREDICTIONS_DIR / f"{file_id}.csv"
 
     if not file_path.exists() or not file_path.is_file():
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="CSV file not found on disk"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
+
+    pattern = re.compile(r"^(.+)-(\d{4}-\d{2}-\d{2})$")
+    match = pattern.match(file_id)
+    sport = match.group(1) if match else None
+    date = match.group(2) if match else None
 
     try:
         with open(file_path, "r", encoding="utf-8") as f:
-            text = f.read()
-            csv_reader = csv.DictReader(io.StringIO(text))
-            rows = []
-            for row in csv_reader:
-                rows.append(dict(row))
+            csv_reader = csv.DictReader(io.StringIO(f.read()))
+            rows = [dict(row) for row in csv_reader]
 
         return {
             "success": True,
             "data": rows,
-            "file_id": prediction_file.id,
-            "file_name": prediction_file.name,
-            "sport": (
-                prediction_file.sport_rel.name if prediction_file.sport_rel else None
-            ),
-            "date": prediction_file.date.isoformat() if prediction_file.date else None,
+            "file_id": file_id,
+            "file_name": file_path.name,
+            "sport": sport,
+            "date": date,
             "row_count": len(rows),
         }
     except Exception as e:

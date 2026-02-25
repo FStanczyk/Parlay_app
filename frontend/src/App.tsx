@@ -49,7 +49,7 @@ function App() {
               <Route
                 path="/hub"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <Hub />
                   </ProtectedRoute>
                 }
@@ -61,7 +61,7 @@ function App() {
               <Route
                 path="/become-expert"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <BecomeExpert />
                   </ProtectedRoute>
                 }
@@ -69,7 +69,7 @@ function App() {
               <Route
                 path="/expert-panel"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <ExpertPanel />
                   </ProtectedRoute>
                 }
@@ -77,7 +77,7 @@ function App() {
               <Route
                 path="/expert-panel/edit-profile"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <EditProfile />
                   </ProtectedRoute>
                 }
@@ -85,7 +85,7 @@ function App() {
               <Route
                 path="/expert-panel/recommendations"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <ManageRecommendations />
                   </ProtectedRoute>
                 }
@@ -93,7 +93,7 @@ function App() {
               <Route
                 path="/expert-panel/recommendations/add"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <AddRecommendation />
                   </ProtectedRoute>
                 }
@@ -101,7 +101,7 @@ function App() {
               <Route
                 path="/expert-panel/recommendations/edit/:id"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <EditRecommendation />
                   </ProtectedRoute>
                 }
@@ -109,7 +109,7 @@ function App() {
               <Route
                 path="/expert-panel/monetization"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <ManageMonetization />
                   </ProtectedRoute>
                 }
@@ -117,7 +117,7 @@ function App() {
               <Route
                 path="/expert-panel/statistics"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <ExpertStatistics />
                   </ProtectedRoute>
                 }
@@ -125,7 +125,7 @@ function App() {
               <Route
                 path="/admin-panel"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <AdminPanel />
                   </ProtectedRoute>
                 }
@@ -146,7 +146,7 @@ function App() {
               <Route
                 path="/experts/search"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <SearchExperts />
                   </ProtectedRoute>
                 }
@@ -154,7 +154,7 @@ function App() {
               <Route
                 path="/experts/:id"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <ExpertProfile />
                   </ProtectedRoute>
                 }
@@ -162,7 +162,7 @@ function App() {
               <Route
                 path="/experts/:id/stats"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <ExpertStatsPage />
                   </ProtectedRoute>
                 }
@@ -170,7 +170,7 @@ function App() {
               <Route
                 path="/experts/recommendations"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <Recommendations />
                   </ProtectedRoute>
                 }
@@ -178,7 +178,7 @@ function App() {
               <Route
                 path="/simulator"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <Simulator />
                   </ProtectedRoute>
                 }
@@ -186,7 +186,7 @@ function App() {
               <Route
                 path="/profile/dashboard"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <Dashboard />
                   </ProtectedRoute>
                 }
@@ -194,7 +194,7 @@ function App() {
               <Route
                 path="/profile/parlays"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <MyParlays />
                   </ProtectedRoute>
                 }
@@ -202,7 +202,7 @@ function App() {
               <Route
                 path="/profile/stats"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <Stats />
                   </ProtectedRoute>
                 }
@@ -210,7 +210,7 @@ function App() {
               <Route
                 path="/profile/settings"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <Settings />
                   </ProtectedRoute>
                 }
@@ -218,7 +218,7 @@ function App() {
               <Route
                 path="/dashboard"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requireAdmin>
                     <Dashboard />
                   </ProtectedRoute>
                 }
@@ -226,7 +226,7 @@ function App() {
               <Route
                 path="/pro-features"
                 element={
-                  <ProtectedRoute requireSubscription requirePlan={1}>
+                  <ProtectedRoute requireAdmin requireSubscription requirePlan={1}>
                     <Features type="pro" />
                   </ProtectedRoute>
                 }
@@ -234,7 +234,7 @@ function App() {
               <Route
                 path="/elite-features"
                 element={
-                  <ProtectedRoute requireSubscription requirePlan={0}>
+                  <ProtectedRoute requireAdmin requireSubscription requirePlan={0}>
                     <Features type="basic" />
                   </ProtectedRoute>
                 }

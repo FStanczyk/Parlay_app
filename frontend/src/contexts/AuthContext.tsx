@@ -40,6 +40,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isExpert: boolean;
   hasSubscription: (hierarchyOrder?: number) => boolean;
   hasFeature: (featureName: string) => boolean;
@@ -141,6 +142,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     user,
     loading,
     isAuthenticated: !!user,
+    isAdmin: user?.is_admin ?? false,
     isExpert: user?.is_expert ?? false,
     hasSubscription,
     hasFeature,

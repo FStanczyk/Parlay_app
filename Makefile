@@ -1,10 +1,16 @@
-.PHONY: help build up down logs clean dev-backend dev-frontend test-backend test-frontend
+.PHONY: help build up down logs clean dev-backend dev-frontend test-backend test-frontend runner train
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
 	@echo ''
 	@echo 'Targets:'
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+runner: ## Run the AI prediction pipeline (update + download + predict → CSV)
+	docker-compose --profile runner run --rm runner
+
+train: ## Retrain NHL goals models
+	docker-compose --profile runner run --rm runner python3 philip_snat_models/nhl/train_goals_models.py
 
 run-soft:
 	sudo systemctl stop postgresql

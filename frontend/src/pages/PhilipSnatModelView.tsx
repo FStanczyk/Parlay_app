@@ -10,7 +10,7 @@ interface CsvRow {
 interface CsvDataResponse {
   success: boolean;
   data: CsvRow[];
-  file_id: number;
+  file_id: string;
   file_name: string;
   sport: string | null;
   date: string | null;
@@ -40,7 +40,8 @@ const PhilipSnatModelView: React.FC = () => {
         setLoading(true);
         setError(null);
         const response = await apiGet<CsvDataResponse>(
-          `/philip-snat/prediction-files/${file_id}/data`
+          `/philip-snat/prediction-files/${file_id}/data`,
+          false
         );
 
         if (response.success && response.data.length > 0) {

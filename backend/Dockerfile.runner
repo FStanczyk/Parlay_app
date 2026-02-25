@@ -1,0 +1,18 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements-runner.txt .
+RUN pip install --no-cache-dir -r requirements-runner.txt
+
+COPY . .
+
+RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
+USER app
+
+CMD ["python3", "philip_snat_models/runner.py"]
