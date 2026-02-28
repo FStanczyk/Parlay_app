@@ -10,5 +10,4 @@ class PhilipSnatLeague(Base):
     update = Column(Boolean, nullable=False, default=True)
     download = Column(Boolean, nullable=False, default=True)
     predict = Column(Boolean, nullable=False, default=True)
-    predictions_path = Column(String(200), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

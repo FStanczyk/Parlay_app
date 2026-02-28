@@ -237,10 +237,12 @@ async def get_prediction_file_data(file_id: str):
         with open(file_path, "r", encoding="utf-8") as f:
             csv_reader = csv.DictReader(io.StringIO(f.read()))
             rows = [dict(row) for row in csv_reader]
+            headers = list(csv_reader.fieldnames or [])
 
         return {
             "success": True,
             "data": rows,
+            "headers": headers,
             "file_id": file_id,
             "file_name": file_path.name,
             "sport": sport,

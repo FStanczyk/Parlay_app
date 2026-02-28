@@ -24,6 +24,8 @@ from app.models.sport import Sport
 from app.models.league import League
 from app.models.game import Game
 from app.models.bet_event import BetEvent, BetResult
+from app.models.bet_event_on_coupon import BetEventOnCoupon
+from app.models.bet_recommendation import BetRecommendation
 
 logger = logging.getLogger(__name__)
 
@@ -383,15 +385,37 @@ def populate_events():
 def clean_old_games():
     db = SessionLocal()
     try:
-        deleted_count = (
-            db.query(Game)
-            .filter(
-                Game.datetime < datetime.datetime.now() - datetime.timedelta(days=3)
-            )
-            .delete()
+        now = datetime.datetime.now()
+
+        protected_event_ids = db.query(BetEventOnCoupon.bet_event_id).union(
+            db.query(BetRecommendation.bet_event_id)
+        ).subquery()
+
+        protected_game_ids = (
+            db.query(BetEvent.game_id)
+            .filter(BetEvent.id.in_(protected_event_ids))
+            .subquery()
         )
+
+        deleted_regular = (
+            db.query(Game)
+            .filter(Game.datetime < now - datetime.timedelta(days=1))
+            .filter(~Game.id.in_(protected_game_ids))
+            .delete(synchronize_session="fetch")
+        )
+
+        deleted_protected = (
+            db.query(Game)
+            .filter(Game.datetime < now - datetime.timedelta(days=30))
+            .filter(Game.id.in_(protected_game_ids))
+            .delete(synchronize_session="fetch")
+        )
+
         db.commit()
-        logger.info(f"Cleaned {deleted_count} old games (older than 3 days)")
+        logger.info(
+            f"Cleaned {deleted_regular} regular games (older than 1 day) "
+            f"and {deleted_protected} protected games (older than 30 days)"
+        )
     except Exception as e:
         db.rollback()
         logger.error(f"Error cleaning old games: {str(e)}", exc_info=True)
@@ -420,11 +444,16 @@ def set_results():
     try:
         current_time = datetime.datetime.now()
 
+        referenced_event_ids = db.query(BetEventOnCoupon.bet_event_id).union(
+            db.query(BetRecommendation.bet_event_id)
+        ).subquery()
+
         games = (
             db.query(Game)
             .filter(Game.datetime < current_time)
             .filter(Game.odds_api_id.isnot(None))
             .join(BetEvent)
+            .filter(BetEvent.id.in_(referenced_event_ids))
             .filter(
                 or_(
                     BetEvent.result.in_([BetResult.TO_RESOLVE, BetResult.UNKNOWN]),
@@ -435,7 +464,7 @@ def set_results():
             .all()
         )
 
-        logger.info(f"Found {len(games)} games with unresolved bet events")
+        logger.info(f"Found {len(games)} games with unresolved bet events on coupons/recommendations")
 
         processed_count = 0
         error_count = 0

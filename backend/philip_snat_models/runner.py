@@ -6,9 +6,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.core.database import SessionLocal
 from app.models.philip_snat_league import PhilipSnatLeague
 from philip_snat_models.nhl.model import NhlAiModel
+from philip_snat_models.khl.model import KhlAiModel
 
 ALL_MODELS = [
     NhlAiModel,
+    KhlAiModel,
 ]
 
 if __name__ == "__main__":

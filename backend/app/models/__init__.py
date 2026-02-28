@@ -20,6 +20,7 @@ from app.models.bet_event_on_coupon import BetEventOnCoupon
 from app.models.philip_snat_sport import PhilipSnatSport
 from app.models.philip_snat_prediction_file import PhilipSnatPredictionFile
 from app.models.philip_snat_nhl_game import PhilipSnatNhlGame
+from app.models.philip_snat_khl_game import PhilipSnatKhlGame
 from app.models.philip_snat_league import PhilipSnatLeague
 from app.models.philip_snat_ai_model import PhilipSnatAiModel
 
@@ -46,6 +47,7 @@ __all__ = [
     "PhilipSnatSport",
     "PhilipSnatPredictionFile",
     "PhilipSnatNhlGame",
+    "PhilipSnatKhlGame",
     "PhilipSnatLeague",
     "PhilipSnatAiModel",
 ]

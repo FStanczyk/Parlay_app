@@ -1,10 +1,13 @@
-.PHONY: help build up down logs clean dev-backend dev-frontend test-backend test-frontend runner train
+.PHONY: help build up down logs clean dev-backend dev-frontend test-backend test-frontend runner train ingestion
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
 	@echo ''
 	@echo 'Targets:'
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-15s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+ingestion: ## Run ingestion script against local DB
+	docker-compose exec backend python3 ingestion_api/ingestion.py
 
 runner: ## Run the AI prediction pipeline (update + download + predict → CSV)
 	docker-compose --profile runner run --rm runner

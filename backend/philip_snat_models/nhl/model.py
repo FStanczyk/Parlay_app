@@ -30,6 +30,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(BASE_DIR, "pytorch_models")
 SCALERS_DIR = os.path.join(BASE_DIR, "scalers")
 TRAINING_CSV = os.path.join(BASE_DIR, "..", "assets", "merge_no_missing.csv")
+PREDICTIONS_DIR = os.path.normpath(os.path.join(BASE_DIR, "..", "predictions"))
 
 WINNER_FEATURES = [
     "diff_l5gw",
@@ -527,7 +528,8 @@ class NhlAiModel(AiModelInterface):
         db = SessionLocal()
         try:
             today = datetime.strptime(self.getter.today(), "%Y-%m-%d")
-            dates = [today, today + timedelta(days=1)]
+            # dates = [today, today + timedelta(days=1)]
+            dates = [today, today]
 
             print(
                 f"[download_new_games] Scanning {dates[0].date()} and {dates[1].date()}"
@@ -583,14 +585,13 @@ class NhlAiModel(AiModelInterface):
         self._load_models()
         db = SessionLocal()
         try:
-            league = (
-                db.query(PhilipSnatLeague)
-                .filter(PhilipSnatLeague.name == self.LEAGUE_NAME)
-                .first()
-            )
-            predictions_path = league.predictions_path if league else None
-
             today = date.today()
+
+            today_file = os.path.join(PREDICTIONS_DIR, f"{self.LEAGUE_NAME}-{today}.csv")
+            if os.path.exists(today_file):
+                print(f"[predict] Prediction file for today already exists: {today_file}, skipping")
+                return
+
             games = (
                 db.query(PhilipSnatNhlGame)
                 .filter(
@@ -656,15 +657,9 @@ class NhlAiModel(AiModelInterface):
                 except Exception as e:
                     print(f"  Error predicting game {game.nhl_id}: {e}")
 
-            if rows and predictions_path:
-                out_dir = os.path.join(
-                    BASE_DIR, "..", predictions_path.split("/", 1)[-1]
-                )
-                out_dir = os.path.normpath(out_dir)
-                self._save_predictions_csv(rows, out_dir, self.LEAGUE_NAME, today)
-                self._cleanup_old_files(out_dir)
-            elif rows:
-                print("[predict] No predictions_path set on league, skipping CSV write")
+            if rows:
+                self._save_predictions_csv(rows, PREDICTIONS_DIR, self.LEAGUE_NAME, today)
+                self._cleanup_old_files(PREDICTIONS_DIR)
 
             print(f"[predict] Done — {len(rows)} games written")
         finally:

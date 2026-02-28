@@ -107,4 +107,13 @@
   color: var(--color-text-secondary);
   white-space: nowrap;
   text-align: left;
+
+  &--team {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+  }
+
+  &--percent {
+    background: color-mix(in srgb, var(--color-result-win) var(--cell-pct), var(--color-bg));
+  }
 }

@@ -10,6 +10,7 @@ interface CsvRow {
 interface CsvDataResponse {
   success: boolean;
   data: CsvRow[];
+  headers: string[];
   file_id: string;
   file_name: string;
   sport: string | null;
@@ -49,8 +50,7 @@ const PhilipSnatModelView: React.FC = () => {
           setFileName(response.file_name);
           setSport(response.sport || '');
           setDate(response.date || '');
-          const csvHeaders = Object.keys(response.data[0]);
-          setHeaders(csvHeaders);
+          setHeaders(response.headers);
         } else {
           setError('No data available');
         }
@@ -67,6 +67,21 @@ const PhilipSnatModelView: React.FC = () => {
 
   const handleBack = () => {
     navigate('/philip-snat-models');
+  };
+
+  const NON_PERCENT_COLUMNS = new Set(['date', 'home', 'away']);
+
+  const formatCellValue = (header: string, value: string): string => {
+    if (!value || NON_PERCENT_COLUMNS.has(header)) return value || '';
+    const num = parseFloat(value);
+    if (isNaN(num)) return value;
+    return `${(num * 100).toFixed(2)}%`;
+  };
+
+  const getCellPercent = (header: string, value: string): number | null => {
+    if (!value || NON_PERCENT_COLUMNS.has(header)) return null;
+    const num = parseFloat(value);
+    return isNaN(num) ? null : num;
   };
 
   const formatDate = (dateString: string | null): string => {
@@ -142,8 +157,12 @@ const PhilipSnatModelView: React.FC = () => {
                 {csvData.map((row, index) => (
                   <tr key={index} className="philip-snat-model-view__tr">
                     {headers.map((header) => (
-                      <td key={header} className="philip-snat-model-view__td">
-                        {row[header] || ''}
+                      <td
+                        key={header}
+                        className={`philip-snat-model-view__td${header === 'home' || header === 'away' ? ' philip-snat-model-view__td--team' : ''}${getCellPercent(header, row[header]) !== null ? ' philip-snat-model-view__td--percent' : ''}`}
+                        style={getCellPercent(header, row[header]) !== null ? { '--cell-pct': `${((getCellPercent(header, row[header]) ?? 0) * 100).toFixed(2)}%` } as React.CSSProperties : undefined}
+                      >
+                        {formatCellValue(header, row[header])}
                       </td>
                     ))}
                   </tr>
