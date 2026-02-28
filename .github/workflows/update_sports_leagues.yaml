@@ -7,101 +7,41 @@ jobs:
   update-sports-leagues:
     runs-on: ubuntu-latest
 
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
-
-      - name: Create .env file from secrets
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-        run: |
-          cat > .env << EOF
-          DATABASE_URL=${DATABASE_URL}
-          SECRET_KEY=${SECRET_KEY}
-          ODDS_API_KEY=${ODDS_API_KEY}
-          EOF
-          echo "Created .env file (first 50 chars of DATABASE_URL):"
-          head -c 50 .env
-
-      - name: Verify .env file
-        run: |
-          echo "Checking .env file contents (masked):"
-          sed 's/\(DATABASE_URL=\)\([^:]*\):\([^@]*\)@/\1***:***@/' .env | head -3
-
-      - name: Start backend service
-        run: |
-          docker-compose down backend || true
-          docker-compose up -d --build --no-deps backend
-
-      - name: Wait for backend to be ready
-        run: |
-          echo "Waiting for backend to be ready..."
-          sleep 10
-          timeout 60 bash -c 'until docker-compose ps backend | grep -q "Up"; do sleep 2; done'
-          echo "Backend is ready!"
-
-      - name: Verify DATABASE_URL in container
-        run: |
-          docker-compose exec -T backend printenv DATABASE_URL | head -c 50 || echo "DATABASE_URL not found in container"
-
-      - name: Check current migration state
-        run: |
-          docker-compose exec -T backend alembic current || echo "No migrations applied yet or database needs initialization"
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
 
       - name: Run database migrations
-        continue-on-error: true
-        run: |
-          docker-compose exec -T backend alembic upgrade head
-
-      - name: Verify migrations or stamp head
-        run: |
-          CURRENT=$(docker-compose exec -T backend alembic current 2>&1 | grep -o '[a-f0-9]\{12\}' | head -1 || echo "")
-          if [ -z "$CURRENT" ]; then
-            echo "No migration version found, attempting to stamp head..."
-            docker-compose exec -T backend alembic stamp head || echo "Could not stamp head - database may need manual intervention"
-          else
-            echo "Current migration version: $CURRENT"
-          fi
+        working-directory: backend
+        run: alembic upgrade head
 
       - name: Populate sports
+        working-directory: backend
         run: |
-          docker-compose exec -T backend python3 -c "
-          import sys
-          import os
-          sys.path.insert(0, '/app')
+          python3 -c "
           from ingestion_api.ingestion import populate_sports_to_database
           result = populate_sports_to_database()
           print(f'Sports: {result[\"added\"]} added, {result[\"updated\"]} updated')
           "
 
       - name: Populate leagues
+        working-directory: backend
         run: |
-          docker-compose exec -T backend python3 -c "
-          import sys
-          import os
-          sys.path.insert(0, '/app')
+          python3 -c "
           from ingestion_api.ingestion import populate_leagues
           result = populate_leagues()
           print(f'Leagues: {result[\"added\"]} added, {result[\"updated\"]} updated')
           "
-
-      - name: Show logs on failure
-        if: failure()
-        run: |
-          docker-compose logs backend
-
-      - name: Cleanup
-        if: always()
-        run: |
-          docker-compose down -v
