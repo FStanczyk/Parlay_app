@@ -28,7 +28,7 @@ jobs:
 
       - name: Run database migrations
         working-directory: backend
-        run: alembic upgrade head
+        run: alembic upgrade heads
 
       - name: Run ingestion script
         working-directory: backend
