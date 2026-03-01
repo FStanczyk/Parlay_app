@@ -20,10 +20,6 @@ const BetEventPanel: React.FC<BetEventPanelProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  const handleLockToggle = () => {
-    onLockToggle(betEvent.id);
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -34,21 +30,11 @@ const BetEventPanel: React.FC<BetEventPanelProps> = ({
   };
 
   return (
-    <div className="bet-event-panel">
-      {!disabled && (
-        <button
-          className="bet-event-panel__lock-button"
-          onClick={handleLockToggle}
-          aria-label={isLocked ? t.betEventPanel.unlock : t.betEventPanel.lock}
-        >
-          {isLocked ? <Icon component={FiLock} aria-hidden={true} /> : <Icon component={FiUnlock} aria-hidden={true} />}
-        </button>
-      )}
-
+    <div className={`bet-event-panel${isLocked ? ' bet-event-panel--locked' : ''}`}>
       <div className="bet-event-panel__content">
         <div className="bet-event-panel__header">
-          <h3 className="bet-event-panel__teams italic-title">
-            {betEvent.game?.home_team} - {betEvent.game?.away_team}
+          <h3 className="bet-event-panel__teams">
+            {betEvent.game?.home_team} — {betEvent.game?.away_team}
           </h3>
           <p className="bet-event-panel__event">{translateEvent(betEvent.event, t.eventsDictionary)}</p>
         </div>
@@ -66,6 +52,16 @@ const BetEventPanel: React.FC<BetEventPanelProps> = ({
               {betEvent.game?.datetime ? formatDate(betEvent.game.datetime) : t.betEventPanel.tbd}
             </p>
           </div>
+
+          {!disabled && (
+            <button
+              className={`bet-event-panel__lock-button${isLocked ? ' bet-event-panel__lock-button--locked' : ''}`}
+              onClick={() => onLockToggle(betEvent.id)}
+              aria-label={isLocked ? t.betEventPanel.unlock : t.betEventPanel.lock}
+            >
+              {isLocked ? <Icon component={FiLock} aria-hidden={true} /> : <Icon component={FiUnlock} aria-hidden={true} />}
+            </button>
+          )}
         </div>
       </div>
     </div>

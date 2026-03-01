@@ -1,48 +1,51 @@
 /* Centralized Theme - SCSS Variables */
 /* Edit this file to change the entire app theme */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
 
 :root {
   /* Background & Surface */
-  --color-bg: #F6F6F2;
-  --color-bg-card: #E8E9E3;
+  --color-bg: #0D1117;
+  --color-bg-card: #161B22;
+  --color-bg-elevated: #1C2430;
+  --color-bg-secondary: #1C2430;
 
   /* Text Colors */
-  --color-text-primary: #2F2F2F;
-  --color-text-negative: #F6F6F2;
-  --color-text-secondary: #5A5A5A;
+  --color-text-primary: #F0F2F5;
+  --color-text-negative: #0D1117;
+  --color-text-secondary: #8B949E;
+  --color-text-tertiary: #6E7681;
 
   /* Accent Color */
   --color-contra: #58C9FA;
 
   /* Compatibility variables for existing styles */
   --color-primary: var(--color-contra);
-  --color-primary-light: rgba(88, 201, 250, 0.2);
+  --color-primary-light: rgba(88, 201, 250, 0.15);
   --color-primary-dark: rgba(88, 201, 250, 0.8);
   --color-text-inverse: var(--color-text-negative);
   --color-text-muted: var(--color-text-secondary);
   --color-surface: var(--color-bg-card);
-  --color-surface-elevated: var(--color-bg-card);
+  --color-surface-elevated: var(--color-bg-elevated);
 
   /* Status Colors */
-  --color-success: #28a745;
-  --color-warning: #ffc107;
-  --color-danger: #dc3545;
-  --color-info: #17a2b8;
+  --color-success: #3fb950;
+  --color-warning: #d29922;
+  --color-danger: #f85149;
+  --color-info: #58C9FA;
 
   /* Bet Result Colors */
-  --color-result-win: #22c55e;
-  --color-result-win-light: rgba(34, 197, 94, 0.15);
-  --color-result-loose: #ef4444;
-  --color-result-loose-light: rgba(239, 68, 68, 0.15);
-  --color-result-void: #f97316;
-  --color-result-void-light: rgba(249, 115, 22, 0.15);
+  --color-result-win: #3fb950;
+  --color-result-win-light: rgba(63, 185, 80, 0.15);
+  --color-result-loose: #f85149;
+  --color-result-loose-light: rgba(248, 81, 73, 0.15);
+  --color-result-void: #d29922;
+  --color-result-void-light: rgba(210, 153, 34, 0.15);
 
   /* Border & Subtle */
-  --color-border: rgba(47, 47, 47, 0.2);
-  --color-border-subtle: rgba(47, 47, 47, 0.1);
-  --color-divider: rgba(47, 47, 47, 0.15);
+  --color-border: rgba(240, 242, 245, 0.12);
+  --color-border-subtle: rgba(240, 242, 245, 0.06);
+  --color-divider: rgba(240, 242, 245, 0.08);
 
   /* Spacing Scale */
   --spacing-xs: 0.25rem;   /* 4px */
@@ -55,7 +58,7 @@
 
   /* Typography */
   --font-family-base: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-  --font-family-heading: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-family-heading: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   --font-size-xs: 0.75rem;    /* 12px */
   --font-size-sm: 0.875rem;   /* 14px */
@@ -88,11 +91,16 @@
   --radius-full: 9999px;
 
   /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
 
+
+  /* Text Glows (subtle on dark) */
+  --text-glow-subtle: 0 0 8px rgba(88, 201, 250, 0.2);
+  --text-glow-mild: 0 0 16px rgba(88, 201, 250, 0.3);
+  --text-glow-light: 0 0 24px rgba(88, 201, 250, 0.2);
 
   /* Transitions */
   --transition-fast: 150ms ease-in-out;

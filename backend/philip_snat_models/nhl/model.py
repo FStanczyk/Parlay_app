@@ -32,6 +32,11 @@ SCALERS_DIR = os.path.join(BASE_DIR, "scalers")
 TRAINING_CSV = os.path.join(BASE_DIR, "..", "assets", "merge_no_missing.csv")
 PREDICTIONS_DIR = os.path.normpath(os.path.join(BASE_DIR, "..", "predictions"))
 
+ENSEMBLE_GOALS_FILE = os.path.join(SCALERS_DIR, "ensemble_goals.joblib")
+ENSEMBLE_HOME_GOALS_FILE = os.path.join(SCALERS_DIR, "ensemble_home_goals.joblib")
+ENSEMBLE_AWAY_GOALS_FILE = os.path.join(SCALERS_DIR, "ensemble_away_goals.joblib")
+ENSEMBLE_RETRAIN_DAYS = 30
+
 WINNER_FEATURES = [
     "diff_l5gw",
     "diff_standing",
@@ -321,6 +326,21 @@ class NhlAiModel(AiModelInterface):
             db.close()
 
     def _train_goal_ensembles(self):
+        ensemble_files = [ENSEMBLE_GOALS_FILE, ENSEMBLE_HOME_GOALS_FILE, ENSEMBLE_AWAY_GOALS_FILE]
+
+        if all(os.path.exists(f) for f in ensemble_files):
+            oldest_mtime = min(os.path.getmtime(f) for f in ensemble_files)
+            age_days = (datetime.now().timestamp() - oldest_mtime) / 86400
+            if age_days < ENSEMBLE_RETRAIN_DAYS:
+                print(f"[train] Ensembles are {age_days:.1f}d old (< {ENSEMBLE_RETRAIN_DAYS}d), loading from cache")
+                self._goals_models = joblib.load(ENSEMBLE_GOALS_FILE)
+                self._home_goals_models = joblib.load(ENSEMBLE_HOME_GOALS_FILE)
+                self._away_goals_models = joblib.load(ENSEMBLE_AWAY_GOALS_FILE)
+                return
+            print(f"[train] Ensembles are {age_days:.1f}d old — retraining")
+        else:
+            print("[train] No cached ensembles found — training from scratch")
+
         if not os.path.exists(TRAINING_CSV):
             raise FileNotFoundError(f"Training CSV not found: {TRAINING_CSV}")
 
@@ -347,6 +367,12 @@ class NhlAiModel(AiModelInterface):
         away_labels = away_df[AWAY_GOALS_LABEL_COL].astype(int).values.clip(0, 6)
         print(f"[train] AWAY_GOALS: {len(away_df)} samples")
         self._away_goals_models = _fit_ensemble(away_attr, away_labels)
+
+        os.makedirs(SCALERS_DIR, exist_ok=True)
+        joblib.dump(self._goals_models, ENSEMBLE_GOALS_FILE)
+        joblib.dump(self._home_goals_models, ENSEMBLE_HOME_GOALS_FILE)
+        joblib.dump(self._away_goals_models, ENSEMBLE_AWAY_GOALS_FILE)
+        print("[train] Ensemble models saved to cache")
 
     @staticmethod
     def _extract(game, fields):

@@ -10,7 +10,6 @@ import BetEventPanel from './BetEventPanel';
 import Filters, { FilterValues } from './Filters';
 import GoogleSignInButton from './GoogleSignInButton';
 import Modal from './Modal';
-import ParlaySummary from './ParlaySummary';
 
 interface GeneratorProps {
   isDemo?: boolean;
@@ -61,7 +60,6 @@ const Generator: React.FC<GeneratorProps> = ({
         setLoading(false);
       }
     };
-
     fetchBetEvents();
   }, [isDemo, maxEvents, defaultEvents, t.errors.failedToFetchEvents]);
 
@@ -69,11 +67,8 @@ const Generator: React.FC<GeneratorProps> = ({
     if (isDemo) return;
     setLockedEventIds(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(eventId)) {
-        newSet.delete(eventId);
-      } else {
-        newSet.add(eventId);
-      }
+      if (newSet.has(eventId)) newSet.delete(eventId);
+      else newSet.add(eventId);
       return newSet;
     });
   };
@@ -83,87 +78,60 @@ const Generator: React.FC<GeneratorProps> = ({
       setGenerating(true);
 
       let limit = defaultEvents;
-      if (!isDemo) {
-        if (filters.eventsNumber) {
+      if (!isDemo && filters.eventsNumber) {
         const requestedLimit = parseInt(filters.eventsNumber);
         limit = requestedLimit > 0 ? requestedLimit : defaultEvents;
-        }
-        // For authenticated users, allow higher limits
-        // The backend will handle the actual limit based on authentication
-      } else {
-        limit = maxEvents;
       }
+      if (isDemo && limit > maxEvents) limit = maxEvents;
 
-      if (isDemo && limit > maxEvents) {
-        limit = maxEvents;
-      }
-
-      const sportId = filters.selectedSport && filters.selectedSport !== '' ? parseInt(filters.selectedSport) : undefined;
-      const leagueId = filters.selectedLeague && filters.selectedLeague !== '' ? parseInt(filters.selectedLeague) : undefined;
-
-      let minOdds: number | undefined;
-      let maxOdds: number | undefined;
-      let fromDate: string | undefined;
-      let toDate: string | undefined;
-
-      if (!isDemo) {
-        minOdds = filters.minOdds ? parseFloat(filters.minOdds) : undefined;
-        maxOdds = filters.maxOdds ? parseFloat(filters.maxOdds) : undefined;
-        fromDate = filters.fromDate && filters.fromDate !== '' ? filters.fromDate : undefined;
-        toDate = filters.toDate && filters.toDate !== '' ? filters.toDate : undefined;
-      }
+      const sportId = filters.selectedSport ? parseInt(filters.selectedSport) : undefined;
+      const leagueId = filters.selectedLeague ? parseInt(filters.selectedLeague) : undefined;
+      const minOdds = !isDemo && filters.minOdds ? parseFloat(filters.minOdds) : undefined;
+      const maxOdds = !isDemo && filters.maxOdds ? parseFloat(filters.maxOdds) : undefined;
+      const fromDate = !isDemo && filters.fromDate ? filters.fromDate : undefined;
+      const toDate = !isDemo && filters.toDate ? filters.toDate : undefined;
 
       const lockedEvents = betEvents.filter(event => lockedEventIds.has(event.id));
       const newEventsNeeded = limit - lockedEvents.length;
-
       let newEvents: BetEvent[] = [];
 
       if (newEventsNeeded > 0) {
         const currentEventIds = betEvents.map(event => event.id);
         newEvents = await betEventsApi.getRandom(
-          newEventsNeeded,
-          sportId,
-          leagueId,
-          currentEventIds,
-          minOdds,
-          maxOdds,
-          fromDate,
-          toDate
+          newEventsNeeded, sportId, leagueId, currentEventIds, minOdds, maxOdds, fromDate, toDate
         );
       }
 
-      const combinedEvents = [...lockedEvents, ...newEvents];
-      setBetEvents(combinedEvents);
+      setBetEvents([...lockedEvents, ...newEvents]);
       setAnimationKey(prev => prev + 1);
     } catch (err) {
       console.error('Error generating bet events:', err);
-
-      // Check if it's an authentication error
-      if (err instanceof Error && (err.message.includes('HTTP error! status: 401') || err.message.includes('HTTP error! status: 403'))) {
-        // Determine which filter might require authentication
-        let filterName = '';
-        if (filters.eventsNumber) filterName = t.filters.eventsNumber.toLowerCase();
-        else if (filters.minOdds) filterName = t.filters.minOdds.toLowerCase();
-        else if (filters.maxOdds) filterName = t.filters.maxOdds.toLowerCase();
-        else if (filters.fromDate) filterName = t.filters.fromDate.toLowerCase();
-        else if (filters.toDate) filterName = t.filters.toDate.toLowerCase();
-        else filterName = 'advanced';
-
+      if (err instanceof Error && (err.message.includes('401') || err.message.includes('403'))) {
+        let filterName = filters.eventsNumber ? t.filters.eventsNumber.toLowerCase()
+          : filters.minOdds ? t.filters.minOdds.toLowerCase()
+          : filters.maxOdds ? t.filters.maxOdds.toLowerCase()
+          : filters.fromDate ? t.filters.fromDate.toLowerCase()
+          : filters.toDate ? t.filters.toDate.toLowerCase()
+          : 'advanced';
         setError(t.errors.loginRequiredForFilter.replace('{filter}', filterName));
       } else {
-      setError(err instanceof Error ? err.message : t.errors.failedToGenerateEvents);
+        setError(err instanceof Error ? err.message : t.errors.failedToGenerateEvents);
       }
     } finally {
       setGenerating(false);
     }
   };
 
-  const handleFiltersChange = (newFilters: FilterValues) => {
-    setFilters(newFilters);
-  };
-
-  const handleSaveParlayClick = () => {
-    setIsSaveModalOpen(true);
+  const handleClear = () => {
+    setFilters({
+      selectedSport: '',
+      selectedLeague: '',
+      minOdds: '',
+      maxOdds: '',
+      eventsNumber: '',
+      fromDate: '',
+      toDate: '',
+    });
   };
 
   const handleSaveModalClose = () => {
@@ -174,32 +142,34 @@ const Generator: React.FC<GeneratorProps> = ({
   };
 
   const handleSaveParlay = async () => {
-    if (!parlayName.trim() || betEvents.length === 0) {
-      return;
-    }
-
+    if (!parlayName.trim() || betEvents.length === 0) return;
     try {
       setSaving(true);
       setSaveError(null);
       setSaveSuccess(false);
-
-      const betEventIds = betEvents.map(event => event.id);
-      await couponsApi.create({
-        name: parlayName.trim(),
-        bet_event_ids: betEventIds,
-      });
-
+      await couponsApi.create({ name: parlayName.trim(), bet_event_ids: betEvents.map(e => e.id) });
       setSaveSuccess(true);
-      setTimeout(() => {
-        handleSaveModalClose();
-      }, 1500);
+      setTimeout(() => handleSaveModalClose(), 1500);
     } catch (err) {
-      console.error('Error saving parlay:', err);
       setSaveError(err instanceof Error ? err.message : t.errors.genericError);
     } finally {
       setSaving(false);
     }
   };
+
+  const totalOdds = betEvents.reduce((acc, e) => acc * e.odds, 1);
+  const oddsValues = betEvents.map(e => e.odds);
+  const minOddsVal = oddsValues.length ? Math.min(...oddsValues) : null;
+  const maxOddsVal = oddsValues.length ? Math.max(...oddsValues) : null;
+
+  const gameTimes = betEvents
+    .filter(e => e.game?.datetime)
+    .map(e => new Date(e.game!.datetime))
+    .sort((a, b) => a.getTime() - b.getTime());
+  const firstEvent = gameTimes[0];
+  const lastEvent = gameTimes[gameTimes.length - 1];
+
+  const formatShortDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
   return (
     <div className="generator">
@@ -213,7 +183,7 @@ const Generator: React.FC<GeneratorProps> = ({
         {error && (
           <div className="generator__error">
             <p>{error}</p>
-            {(error.includes('Log in or register') || error.includes('Zaloguj się lub zarejestruj')) && (
+            {(error.includes('Log in') || error.includes('Zaloguj')) && (
               <GoogleSignInButton className="error-google-button" />
             )}
           </div>
@@ -221,41 +191,60 @@ const Generator: React.FC<GeneratorProps> = ({
 
         {!loading && !error && (
           <>
-            <section className="generator__header">
-              <h2 className="generator__title">{t.generator.title}</h2>
-            </section>
+            <div className="generator__panel">
+              <div className="generator__panel-top">
+                <h2 className="generator__title">{t.generator.title}</h2>
+              </div>
 
-            <section className="generator__filters">
-              <Filters onFiltersChange={handleFiltersChange} isDemo={isDemo} />
-            </section>
+              <Filters
+                onFiltersChange={setFilters}
+                onClear={handleClear}
+                isDemo={isDemo}
+              />
 
-            <section className="generator__actions">
-              <button
-                className="button_primary generator__generate-button"
-                onClick={handleGenerateClick}
-                disabled={generating}
-              >
-                {t.generator.generate}
-                <Icon component={FiShuffle} aria-hidden={true} />
-              </button>
-              {isAuthenticated && isAdmin && !isDemo && (
-                <button
-                  className="button_primary generator__save-button"
-                  onClick={handleSaveParlayClick}
-                  disabled={betEvents.length === 0}
-                >
-                  {t.generator.saveParlay}
-                </button>
-              )}
-            </section>
+              <div className="generator__action-bar">
+                <div className="generator__action-btns">
+                  <button
+                    className="button_primary generator__generate-button"
+                    onClick={handleGenerateClick}
+                    disabled={generating}
+                  >
+                    {generating ? t.common.loading : t.generator.generate}
+                    {!generating && <Icon component={FiShuffle} aria-hidden={true} />}
+                  </button>
+                  {isAuthenticated && isAdmin && !isDemo && (
+                    <button
+                      className="button_primary generator__save-button"
+                      onClick={() => setIsSaveModalOpen(true)}
+                      disabled={betEvents.length === 0}
+                    >
+                      {t.generator.saveParlay}
+                    </button>
+                  )}
+                </div>
 
-            {betEvents.length > 0 && (
-              <section className="generator__summary">
-                <ParlaySummary betEvents={betEvents} />
-              </section>
-            )}
+                {betEvents.length > 0 && (
+                  <div className="generator__stats-inline">
+                    <span className="generator__stats-item generator__stats-item--total">
+                      {totalOdds.toFixed(2)}×
+                    </span>
+                    {minOddsVal !== null && maxOddsVal !== null && (
+                      <span className="generator__stats-item">
+                        {minOddsVal.toFixed(2)}–{maxOddsVal.toFixed(2)}
+                      </span>
+                    )}
+                    {firstEvent && lastEvent && (
+                      <span className="generator__stats-item">
+                        {formatShortDate(firstEvent)}
+                        {firstEvent.toDateString() !== lastEvent.toDateString() && ` – ${formatShortDate(lastEvent)}`}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
 
-            <section className="generator__events">
+            <div className="generator__events">
               {betEvents.length > 0 ? (
                 <div className="generator__events-grid">
                   {betEvents.map((betEvent, index) => {
@@ -287,7 +276,7 @@ const Generator: React.FC<GeneratorProps> = ({
                   <div className="generator__spinner"></div>
                 </div>
               )}
-            </section>
+            </div>
 
             <Modal
               isOpen={isSaveModalOpen}
@@ -311,9 +300,7 @@ const Generator: React.FC<GeneratorProps> = ({
                       disabled={saving}
                     />
                     {saveError && (
-                      <div className="save-parlay-modal__error">
-                        <p>{saveError}</p>
-                      </div>
+                      <div className="save-parlay-modal__error"><p>{saveError}</p></div>
                     )}
                     <div className="save-parlay-modal__actions">
                       <button

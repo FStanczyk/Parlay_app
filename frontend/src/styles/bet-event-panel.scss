@@ -1,43 +1,22 @@
 .bet-event-panel {
   position: relative;
-  background-color: var(--color-surface);
+  background-color: var(--color-bg-card);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-base);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
 
   &:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--color-primary);
+    border-color: rgba(88, 201, 250, 0.3);
+    box-shadow: 0 0 0 1px rgba(88, 201, 250, 0.1);
   }
 
-  &__lock-button {
-    position: absolute;
-    top: var(--spacing-sm);
-    right: var(--spacing-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--touch-target-min);
-    height: var(--touch-target-min);
-    background-color: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    z-index: 1;
-
-    &:hover {
-      background-color: var(--color-primary);
-      color: var(--color-bg);
-      border-color: var(--color-primary);
-    }
-
-    &:active {
-      transform: scale(0.95);
-    }
+  &--locked {
+    border-color: var(--color-contra);
+    background-color: color-mix(in srgb, var(--color-contra) 6%, var(--color-bg-card));
   }
 
   &__content {
@@ -54,12 +33,10 @@
 
   &__teams {
     margin: 0;
-    font-family: var(--font-family-heading);
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
     line-height: var(--line-height-tight);
-    text-shadow: var(--text-glow-subtle);
   }
 
   &__event {
@@ -71,37 +48,88 @@
 
   &__footer {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
     gap: var(--spacing-md);
-
-    @media (min-width: 768px) {
-      align-items: center;
-    }
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border-subtle);
   }
 
   &__odds {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--color-bg-secondary);
-    border-radius: var(--radius-sm);
-    min-width: 60px;
+    background-color: color-mix(in srgb, var(--color-contra) 10%, transparent);
+    border: 1px solid rgba(88, 201, 250, 0.2);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-xs) var(--spacing-md);
+    min-width: 56px;
   }
 
   &__odds-value {
     margin: 0;
-    font-size: var(--font-size-lg);
-    color: var(--color-text-primary);
-    text-shadow: none;
-    font-style: italic;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-contra);
+    letter-spacing: 0.02em;
   }
 
   &__meta {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
+    gap: 2px;
     flex: 1;
+    min-width: 0;
+  }
+
+  &__league {
+    margin: 0;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__date {
+    margin: 0;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    font-weight: var(--font-weight-normal);
+  }
+
+  &__lock-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background-color: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+
+    &:hover {
+      background-color: var(--color-primary-light);
+      color: var(--color-contra);
+      border-color: rgba(88, 201, 250, 0.3);
+    }
+
+    &--locked {
+      background-color: var(--color-primary-light);
+      color: var(--color-contra);
+      border-color: var(--color-contra);
+    }
+
+    &:active {
+      transform: scale(0.92);
+    }
   }
 
   &__meta-row {
@@ -121,7 +149,7 @@
     font-weight: var(--font-weight-medium);
     padding: var(--spacing-xs) var(--spacing-sm);
     border-radius: var(--radius-sm);
-    background: color-mix(in srgb, var(--color-primary) 20%, transparent);
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
     color: var(--color-primary);
     white-space: nowrap;
   }
@@ -129,26 +157,10 @@
   &__stake {
     font-size: var(--font-size-xs);
     color: var(--color-text-secondary);
-    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
     padding: var(--spacing-xs) var(--spacing-sm);
     border-radius: var(--radius-sm);
     font-weight: var(--font-weight-medium);
     white-space: nowrap;
-  }
-
-  &__league {
-    margin: 0;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  &__date {
-    margin: 0;
-    font-size: var(--font-size-xs);
-    color: var(--color-text-secondary);
-    font-weight: var(--font-weight-normal);
   }
 }
