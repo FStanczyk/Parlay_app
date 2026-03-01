@@ -599,9 +599,13 @@ class NhlAiModel(AiModelInterface):
                     if features is None:
                         continue
 
-                    db.add(PhilipSnatNhlGame(**features))
-                    db.commit()
-                    inserted += 1
+                    try:
+                        db.add(PhilipSnatNhlGame(**features))
+                        db.commit()
+                        inserted += 1
+                    except Exception as e:
+                        db.rollback()
+                        print(f"  Error inserting game {game_id}: {e}")
 
             print(f"[download_new_games] Done — inserted {inserted} new games")
         finally:
