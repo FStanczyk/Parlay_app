@@ -126,7 +126,7 @@ async def get_prediction_files():
     pattern = re.compile(r"^(.+)-(\d{4}-\d{2}-\d{2})\.csv$")
 
     if PREDICTIONS_DIR.exists():
-        for file_path in sorted(PREDICTIONS_DIR.iterdir(), reverse=True):
+        for file_path in PREDICTIONS_DIR.iterdir():
             if file_path.is_file() and file_path.suffix == ".csv":
                 match = pattern.match(file_path.name)
                 sport = match.group(1) if match else file_path.stem
@@ -137,6 +137,8 @@ async def get_prediction_files():
                     "sport": sport,
                     "date": date,
                 })
+
+    result.sort(key=lambda x: (x["date"] or "", x["sport"]), reverse=True)
 
     return result
 
