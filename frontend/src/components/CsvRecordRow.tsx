@@ -16,6 +16,7 @@ interface CsvRecordRowProps {
   showView?: boolean;
   onRemove?: (record: CsvRecord) => void;
   onView?: (record: CsvRecord) => void;
+  onDownload?: (record: CsvRecord) => void;
 }
 
 const CsvRecordRow: React.FC<CsvRecordRowProps> = ({
@@ -25,8 +26,13 @@ const CsvRecordRow: React.FC<CsvRecordRowProps> = ({
   showView = false,
   onRemove,
   onView,
+  onDownload,
 }) => {
   const handleDownload = async () => {
+    if (onDownload) {
+      onDownload(record);
+      return;
+    }
     if (!record.storedFilename) return;
     try {
       const endpoint = showRemove ? `/admin/uploads/${record.storedFilename}` : `/uploads/${record.storedFilename}`;

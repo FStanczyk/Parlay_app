@@ -5,6 +5,7 @@ import { useTranslation } from '../../contexts/TranslationContext';
 import '../../styles/manage-recommendations.scss';
 import { TipsterTier } from '../../types/interfaces';
 import { apiGet, apiPatch } from '../../utils/api';
+import { translateEvent } from '../../utils/translateEvent';
 
 interface Game {
   id: number;
@@ -156,7 +157,7 @@ const EditRecommendation: React.FC = () => {
             {recommendation.bet_event?.game?.home_team} vs {recommendation.bet_event?.game?.away_team}
           </h2>
           <p className="manage-recs__game-meta">
-            {recommendation.bet_event?.event} • {recommendation.bet_event?.odds.toFixed(2)}
+            {translateEvent(recommendation.bet_event?.event ?? '', t.eventsDictionary)} • {recommendation.bet_event?.odds.toFixed(2)}
             {recommendation.bet_event?.game && (
               <> • {formatDateTime(recommendation.bet_event.game.datetime)}</>
             )}

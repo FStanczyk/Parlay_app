@@ -218,6 +218,23 @@ async def download_file(filename: str, current_user: User = Depends(get_current_
     return FileResponse(path=str(file_path), filename=filename, media_type="text/csv")
 
 
+@router.get("/philip-snat/prediction-files/{file_id}/download")
+async def download_prediction_file(file_id: str):
+    if ".." in file_id or "/" in file_id or "\\" in file_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file id")
+
+    file_path = PREDICTIONS_DIR / f"{file_id}.csv"
+
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
+
+    return FileResponse(
+        path=str(file_path),
+        filename=f"{file_id}.csv",
+        media_type="text/csv",
+    )
+
+
 @router.get("/philip-snat/prediction-files/{file_id}/data")
 async def get_prediction_file_data(file_id: str):
     if ".." in file_id or "/" in file_id or "\\" in file_id:

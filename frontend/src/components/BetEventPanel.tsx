@@ -3,6 +3,7 @@ import { FiLock, FiUnlock } from 'react-icons/fi';
 import { useTranslation } from '../contexts/TranslationContext';
 import { BetEvent } from '../types/interfaces';
 import { Icon } from '../utils/Icon';
+import { translateEvent } from '../utils/translateEvent';
 
 interface BetEventPanelProps {
   betEvent: BetEvent;
@@ -49,7 +50,7 @@ const BetEventPanel: React.FC<BetEventPanelProps> = ({
           <h3 className="bet-event-panel__teams italic-title">
             {betEvent.game?.home_team} - {betEvent.game?.away_team}
           </h3>
-          <p className="bet-event-panel__event">{betEvent.event}</p>
+          <p className="bet-event-panel__event">{translateEvent(betEvent.event, t.eventsDictionary)}</p>
         </div>
 
         <div className="bet-event-panel__footer">

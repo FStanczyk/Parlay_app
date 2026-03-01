@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CsvRecordRow, { CsvRecord } from '../components/CsvRecordRow';
-import { apiGet } from '../utils/api';
+import { apiGet, downloadFile } from '../utils/api';
 
 const PhilipSnatModels: React.FC = () => {
   const navigate = useNavigate();
@@ -41,6 +41,18 @@ const PhilipSnatModels: React.FC = () => {
     navigate(`/philip-snat-models/${record.id}`);
   };
 
+  const handleDownload = async (record: CsvRecord) => {
+    try {
+      await downloadFile(
+        `/philip-snat/prediction-files/${record.id}/download`,
+        record.fileName,
+        false
+      );
+    } catch (err) {
+      console.error('Download failed:', err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="philip-snat-models">
@@ -66,6 +78,7 @@ const PhilipSnatModels: React.FC = () => {
                   showDownload={true}
                   showView={true}
                   onView={handleView}
+                  onDownload={handleDownload}
                 />
               ))}
             </div>

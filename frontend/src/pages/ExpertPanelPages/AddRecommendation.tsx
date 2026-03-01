@@ -5,6 +5,7 @@ import { useTranslation } from '../../contexts/TranslationContext';
 import '../../styles/manage-recommendations.scss';
 import { TipsterTier } from '../../types/interfaces';
 import { apiGet, apiPost } from '../../utils/api';
+import { translateEvent } from '../../utils/translateEvent';
 
 interface Sport {
   id: number;
@@ -285,7 +286,7 @@ const AddRecommendation: React.FC = () => {
                         {categoryEvents.map((betEvent) => (
                           <div key={betEvent.id} className="manage-recs__bet-card">
                             <div className="manage-recs__bet-info">
-                              <span className="manage-recs__bet-event">{betEvent.event}</span>
+                              <span className="manage-recs__bet-event">{translateEvent(betEvent.event, t.eventsDictionary)}</span>
                               <span className="manage-recs__bet-odds">{betEvent.odds.toFixed(2)}</span>
                             </div>
                             <button

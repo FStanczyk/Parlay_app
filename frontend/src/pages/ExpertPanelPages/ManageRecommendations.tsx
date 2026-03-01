@@ -5,6 +5,7 @@ import { useTranslation } from '../../contexts/TranslationContext';
 import '../../styles/manage-recommendations.scss';
 import { TipsterTier } from '../../types/interfaces';
 import { apiDelete, apiGet } from '../../utils/api';
+import { translateEvent } from '../../utils/translateEvent';
 
 interface Game {
   id: number;
@@ -201,7 +202,7 @@ const ManageRecommendations: React.FC = () => {
                             {rec.tipster_tier.level === 0 ? 'FREE' : rec.tipster_tier.name || `Tier ${rec.tipster_tier.level}`}
                           </span>
                         )}
-                        <span className="manage-recs__rec-event">{rec.bet_event?.event}</span>
+                        <span className="manage-recs__rec-event">{translateEvent(rec.bet_event?.event ?? '', t.eventsDictionary)}</span>
                         <span className="manage-recs__rec-odds">{rec.bet_event?.odds.toFixed(2)}</span>
                         {rec.stake && (
                           <span className="manage-recs__rec-stake">{rec.stake}u</span>

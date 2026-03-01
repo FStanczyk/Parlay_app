@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { BetRecommendation } from '../services/tipsterService';
+import { useTranslation } from '../contexts/TranslationContext';
+import { translateEvent } from '../utils/translateEvent';
 
 interface ExpertPickPanelProps {
   recommendation: BetRecommendation;
@@ -9,6 +11,7 @@ interface ExpertPickPanelProps {
 
 const ExpertPickPanel: React.FC<ExpertPickPanelProps> = ({ recommendation, resolved = false, ongoing = false }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { t } = useTranslation();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -69,7 +72,7 @@ const ExpertPickPanel: React.FC<ExpertPickPanelProps> = ({ recommendation, resol
               {recommendation.tipster_tier.level === 0 ? 'FREE' : recommendation.tipster_tier.name || `Tier ${recommendation.tipster_tier.level}`}
             </span>
           )}
-          <span className="expert-pick-row__event">{recommendation.bet_event?.event}</span>
+          <span className="expert-pick-row__event">{translateEvent(recommendation.bet_event?.event ?? '', t.eventsDictionary)}</span>
           <span className="expert-pick-row__odds">{recommendation.bet_event?.odds.toFixed(2)}</span>
           {recommendation.stake && (
             <span className="expert-pick-row__stake">{recommendation.stake}u</span>
