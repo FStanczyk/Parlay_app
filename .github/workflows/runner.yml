@@ -27,7 +27,17 @@ jobs:
           cache-dependency-path: backend/requirements-runner.txt
 
       - name: Install dependencies
-        run: pip install -r backend/requirements-runner.txt
+        run: |
+          pip install -r backend/requirements-runner.txt
+          pip install alembic psycopg2-binary
+
+      - name: Run migrations
+        working-directory: backend
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: alembic upgrade head
 
       - name: Run runner
         working-directory: backend
