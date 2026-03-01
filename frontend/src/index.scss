@@ -66,8 +66,8 @@ body {
 /* Typography - Mobile-first (base: ~360-400px phones) */
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
-  font-family: var(--font-family-heading);
-  font-weight: var(--font-weight-normal);
+  font-family: var(--font-family-base);
+  font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
   color: var(--color-text-primary);
 }

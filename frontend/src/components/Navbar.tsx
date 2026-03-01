@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { FiChevronDown, FiMenu, FiX } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
-import { APP_NAME, ROUTES } from '../constants';
+import snatLogo from '../assets/branding/Snat_icon_black.svg';
+import { ROUTES } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from '../contexts/TranslationContext';
 import { availableLanguages } from '../translations';
@@ -161,7 +162,7 @@ const Navbar: React.FC = () => {
       <nav className="navbar">
         <div className="navbar__toolbar">
           <div className="navbar__desktop-part navbar__logo" onClick={() => navigate(ROUTES.HOME)}>
-            {APP_NAME}
+            <img src={snatLogo} alt="Philip Snat" className="navbar__logo-img" />
           </div>
 
           {!isMobile ? (

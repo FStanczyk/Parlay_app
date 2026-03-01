@@ -1,3 +1,4 @@
+import fcntl
 import sys
 from pathlib import Path
 
@@ -13,29 +14,42 @@ ALL_MODELS = [
     KhlAiModel,
 ]
 
+LOCK_FILE = "/tmp/philip_snat_runner.lock"
+
 if __name__ == "__main__":
-    db = SessionLocal()
+    _lock_fh = open(LOCK_FILE, "w")
     try:
-        leagues = {row.name: row for row in db.query(PhilipSnatLeague).all()}
+        fcntl.flock(_lock_fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        print("[runner] Another instance is already running — exiting.")
+        sys.exit(0)
+
+    try:
+        db = SessionLocal()
+        try:
+            leagues = {row.name: row for row in db.query(PhilipSnatLeague).all()}
+        finally:
+            db.close()
+
+        for ModelClass in ALL_MODELS:
+            league = leagues.get(ModelClass.LEAGUE_NAME)
+            if league is None:
+                print(f"[{ModelClass.LEAGUE_NAME}] No league row found in DB, skipping")
+                continue
+
+            model = ModelClass()
+
+            if league.update:
+                print(f"=== [{league.name}] update_games ===")
+                model.update_games()
+
+            if league.download:
+                print(f"=== [{league.name}] download_new_games ===")
+                model.download_new_games()
+
+            if league.predict:
+                print(f"=== [{league.name}] predict ===")
+                model.predict()
     finally:
-        db.close()
-
-    for ModelClass in ALL_MODELS:
-        league = leagues.get(ModelClass.LEAGUE_NAME)
-        if league is None:
-            print(f"[{ModelClass.LEAGUE_NAME}] No league row found in DB, skipping")
-            continue
-
-        model = ModelClass()
-
-        if league.update:
-            print(f"=== [{league.name}] update_games ===")
-            model.update_games()
-
-        if league.download:
-            print(f"=== [{league.name}] download_new_games ===")
-            model.download_new_games()
-
-        if league.predict:
-            print(f"=== [{league.name}] predict ===")
-            model.predict()
+        fcntl.flock(_lock_fh, fcntl.LOCK_UN)
+        _lock_fh.close()

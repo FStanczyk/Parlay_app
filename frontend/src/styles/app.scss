@@ -12,10 +12,7 @@
 }
 
 .italic-title {
-  font-style: italic;
-  text-shadow: var(--text-glow-light);
-  font-family: var(--font-family-heading);
-  font-weight: var(--font-weight-light);
+  font-weight: var(--font-weight-semibold);
 }
 
 @keyframes borderLoop {
