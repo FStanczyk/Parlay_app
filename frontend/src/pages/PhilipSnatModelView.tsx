@@ -41,8 +41,7 @@ const PhilipSnatModelView: React.FC = () => {
         setLoading(true);
         setError(null);
         const response = await apiGet<CsvDataResponse>(
-          `/philip-snat/prediction-files/${file_id}/data`,
-          false
+          `/philip-snat/prediction-files/${file_id}/data`
         );
 
         if (response.success && response.data.length > 0) {
