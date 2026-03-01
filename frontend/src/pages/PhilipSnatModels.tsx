@@ -16,7 +16,7 @@ const PhilipSnatModels: React.FC = () => {
           name: string;
           date: string | null;
           sport: string;
-        }>>('/philip-snat/prediction-files', false);
+        }>>('/philip-snat/prediction-files');
 
         const records: CsvRecord[] = files.map(file => ({
           id: file.id,
@@ -45,8 +45,7 @@ const PhilipSnatModels: React.FC = () => {
     try {
       await downloadFile(
         `/philip-snat/prediction-files/${record.id}/download`,
-        record.fileName,
-        false
+        record.fileName
       );
     } catch (err) {
       console.error('Download failed:', err);
