@@ -29,17 +29,18 @@ const Login: React.FC = () => {
       formData.append('username', email);
       formData.append('password', password);
 
-      const response = await axios.post(
+      await axios.post(
         `${API_BASE_URL}/auth/login`,
         formData,
         {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
+          withCredentials: true,
         }
       );
 
-      await login(response.data.access_token);
+      await login();
     } catch (err: any) {
       const errorData = err.response?.data;
       if (errorData?.detail) {

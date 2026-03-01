@@ -19,11 +19,10 @@ const BecomeExpert: React.FC = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
       await axios.post(
         `${API_BASE_URL}/tipsters/`,
         { description },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { withCredentials: true }
       );
       setSuccess(t.becomeExpert.success);
       setTimeout(() => {

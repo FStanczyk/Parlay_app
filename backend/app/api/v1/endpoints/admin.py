@@ -121,7 +121,7 @@ async def list_uploads_admin(current_user: User = Depends(require_admin)):
 
 
 @router.get("/philip-snat/prediction-files")
-async def get_prediction_files():
+async def get_prediction_files(current_user: User = Depends(get_current_user)):
     result = []
     pattern = re.compile(r"^(.+)-(\d{4}-\d{2}-\d{2})\.csv$")
 
@@ -219,7 +219,7 @@ async def download_file(filename: str, current_user: User = Depends(get_current_
 
 
 @router.get("/philip-snat/prediction-files/{file_id}/download")
-async def download_prediction_file(file_id: str):
+async def download_prediction_file(file_id: str, current_user: User = Depends(get_current_user)):
     if ".." in file_id or "/" in file_id or "\\" in file_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file id")
 
@@ -236,7 +236,7 @@ async def download_prediction_file(file_id: str):
 
 
 @router.get("/philip-snat/prediction-files/{file_id}/data")
-async def get_prediction_file_data(file_id: str):
+async def get_prediction_file_data(file_id: str, current_user: User = Depends(get_current_user)):
     if ".." in file_id or "/" in file_id or "\\" in file_id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file id")
 

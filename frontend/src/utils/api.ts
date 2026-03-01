@@ -1,4 +1,3 @@
-// API utility functions for authenticated requests
 import { API_BASE_URL } from '../constants';
 
 export interface ApiResponse<T> {
@@ -10,14 +9,7 @@ export interface ApiResponse<T> {
 export const apiCall = async <T>(
   endpoint: string,
   options: RequestInit = {},
-  requireAuth: boolean = true
 ): Promise<T> => {
-  const token = localStorage.getItem('token');
-
-  if (requireAuth && !token) {
-    throw new Error('No authentication token found');
-  }
-
   const url = `${API_BASE_URL}${endpoint}`;
 
   const headers: Record<string, string> = {
@@ -25,13 +17,10 @@ export const apiCall = async <T>(
     ...(options.headers as Record<string, string> || {}),
   };
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
   const response = await fetch(url, {
     ...options,
     headers,
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -41,58 +30,44 @@ export const apiCall = async <T>(
   return response.json();
 };
 
-// Convenience methods for common HTTP verbs
-export const apiGet = <T>(endpoint: string, requireAuth: boolean = true): Promise<T> => {
-  return apiCall<T>(endpoint, { method: 'GET' }, requireAuth);
+export const apiGet = <T>(endpoint: string): Promise<T> => {
+  return apiCall<T>(endpoint, { method: 'GET' });
 };
 
-export const apiPost = <T>(endpoint: string, data?: any, requireAuth: boolean = true): Promise<T> => {
+export const apiPost = <T>(endpoint: string, data?: any): Promise<T> => {
   return apiCall<T>(endpoint, {
     method: 'POST',
     body: data ? JSON.stringify(data) : undefined,
-  }, requireAuth);
+  });
 };
 
-export const apiPut = <T>(endpoint: string, data?: any, requireAuth: boolean = true): Promise<T> => {
+export const apiPut = <T>(endpoint: string, data?: any): Promise<T> => {
   return apiCall<T>(endpoint, {
     method: 'PUT',
     body: data ? JSON.stringify(data) : undefined,
-  }, requireAuth);
+  });
 };
 
-export const apiPatch = <T>(endpoint: string, data?: any, requireAuth: boolean = true): Promise<T> => {
+export const apiPatch = <T>(endpoint: string, data?: any): Promise<T> => {
   return apiCall<T>(endpoint, {
     method: 'PATCH',
     body: data ? JSON.stringify(data) : undefined,
-  }, requireAuth);
+  });
 };
 
-export const apiDelete = <T>(endpoint: string, requireAuth: boolean = true): Promise<T> => {
-  return apiCall<T>(endpoint, { method: 'DELETE' }, requireAuth);
+export const apiDelete = <T>(endpoint: string): Promise<T> => {
+  return apiCall<T>(endpoint, { method: 'DELETE' });
 };
 
 export const apiPostFile = async <T>(
   endpoint: string,
   formData: FormData,
-  requireAuth: boolean = true
 ): Promise<T> => {
-  const token = localStorage.getItem('token');
-
-  if (requireAuth && !token) {
-    throw new Error('No authentication token found');
-  }
-
   const url = `${API_BASE_URL}${endpoint}`;
-
-  const headers: Record<string, string> = {};
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
 
   const response = await fetch(url, {
     method: 'POST',
-    headers,
+    credentials: 'include',
     body: formData,
   });
 
@@ -107,25 +82,12 @@ export const apiPostFile = async <T>(
 export const downloadFile = async (
   endpoint: string,
   filename: string,
-  requireAuth: boolean = true
 ): Promise<void> => {
-  const token = localStorage.getItem('token');
-
-  if (requireAuth && !token) {
-    throw new Error('No authentication token found');
-  }
-
   const url = `${API_BASE_URL}${endpoint}`;
-
-  const headers: Record<string, string> = {};
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
 
   const response = await fetch(url, {
     method: 'GET',
-    headers,
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -143,11 +105,10 @@ export const downloadFile = async (
   window.URL.revokeObjectURL(downloadUrl);
 };
 
-// Public API methods (no authentication required)
 export const publicApiGet = <T>(endpoint: string): Promise<T> => {
-  return apiGet<T>(endpoint, false);
+  return apiGet<T>(endpoint);
 };
 
 export const publicApiPost = <T>(endpoint: string, data?: any): Promise<T> => {
-  return apiPost<T>(endpoint, data, false);
+  return apiPost<T>(endpoint, data);
 };

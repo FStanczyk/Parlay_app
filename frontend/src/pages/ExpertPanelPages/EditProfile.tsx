@@ -17,16 +17,14 @@ const EditProfile: React.FC = () => {
   useEffect(() => {
     const fetchTipster = async () => {
       try {
-        const token = localStorage.getItem('token');
         const response = await axios.get(`${API_BASE_URL}/tipsters/me`, {
-          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
         });
         setDescription(response.data.description || '');
         setTag1(response.data.tag_1 || '');
         setTag2(response.data.tag_2 || '');
         setTag3(response.data.tag_3 || '');
       } catch (err) {
-        console.error('Failed to fetch tipster data:', err);
       } finally {
         setLoading(false);
       }
@@ -40,7 +38,6 @@ const EditProfile: React.FC = () => {
     setSaving(true);
 
     try {
-      const token = localStorage.getItem('token');
       await axios.patch(
         `${API_BASE_URL}/tipsters/me`,
         {
@@ -49,7 +46,7 @@ const EditProfile: React.FC = () => {
           tag_2: tag2,
           tag_3: tag3
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { withCredentials: true }
       );
       setSuccess(t.expertPanel.saveSuccess);
     } catch (err) {

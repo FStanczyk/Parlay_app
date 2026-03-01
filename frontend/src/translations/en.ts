@@ -279,7 +279,7 @@ export const en = {
     'tercja': 'period',
     'kwarta': 'quarter',
     'mecz': 'match',
-    'gol': 'goal',
+    'gol ': 'goal',
     'połowa': 'half',
     'zakład bez remisu': 'no draw bet',
     'zawodnika': 'player',

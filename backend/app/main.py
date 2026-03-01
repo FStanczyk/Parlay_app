@@ -16,19 +16,23 @@ from app.models import (
     SubscriptionPayment,
 )
 
+_is_production = settings.ENVIRONMENT == "production"
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description="Parlay App API",
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    openapi_url=None if _is_production else f"{settings.API_V1_STR}/openapi.json",
+    docs_url=None if _is_production else "/docs",
+    redoc_url=None if _is_production else "/redoc",
 )
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

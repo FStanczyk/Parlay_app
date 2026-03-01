@@ -10,7 +10,7 @@ export interface SubscriptionPlan {
   features: Record<string, any>;
   is_active: boolean;
   sort_order: number;
-  hierarchy_order: number; // 0 is lowest tier
+  hierarchy_order: number;
 }
 
 export interface UserSubscription {
@@ -44,8 +44,8 @@ interface AuthContextType {
   isExpert: boolean;
   hasSubscription: (hierarchyOrder?: number) => boolean;
   hasFeature: (featureName: string) => boolean;
-  login: (token: string) => Promise<void>;
-  logout: () => void;
+  login: () => Promise<void>;
+  logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -67,34 +67,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const getToken = () => localStorage.getItem('token');
-
-  const setAuthToken = (token: string) => {
-    localStorage.setItem('token', token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  };
-
-  const removeAuthToken = () => {
-    localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
-  };
-
   const fetchUser = async () => {
-    const token = getToken();
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
-
     try {
-      setAuthToken(token);
-      const response = await axios.get(`${API_BASE_URL}/subscriptions/me`);
+      const response = await axios.get(`${API_BASE_URL}/subscriptions/me`, {
+        withCredentials: true,
+      });
       setUser(response.data);
     } catch (error: any) {
-      console.error('Failed to fetch user:', error);
       if (error.response?.status === 401) {
-        removeAuthToken();
         setUser(null);
       }
     } finally {
@@ -106,14 +86,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     fetchUser();
   }, []);
 
-  const login = async (token: string) => {
-    setAuthToken(token);
+  const login = async () => {
     await fetchUser();
   };
 
-  const logout = () => {
-    removeAuthToken();
-    setUser(null);
+  const logout = async () => {
+    try {
+      await axios.post(`${API_BASE_URL}/auth/logout`, {}, { withCredentials: true });
+    } catch {
+    } finally {
+      setUser(null);
+    }
   };
 
   const refreshUser = async () => {
