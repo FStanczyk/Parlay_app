@@ -20,6 +20,8 @@ class Settings(BaseSettings):
         "http://localhost:3001",
         "http://frontend:3000",
         "https://frontend-production-691a.up.railway.app",
+        "https://www.philipsnat.com",
+        "https://philipsnat.com",
     ]
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
