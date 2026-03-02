@@ -31,6 +31,7 @@ def login_for_access_token(
         samesite="lax",
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
+        domain=settings.COOKIE_DOMAIN if settings.COOKIE_DOMAIN else None,
     )
     return {"message": "Login successful"}
 
