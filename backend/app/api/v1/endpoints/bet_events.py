@@ -113,10 +113,6 @@ def get_random_bet_events(
         except ValueError:
             to_datetime = None
 
-    # Debug logging
-    print(
-        f"Random endpoint params: sport_id={sport_id}, league_id={league_id}, min_odds={min_odds}, max_odds={max_odds}, from_date={from_date}, to_date={to_date}, limit={limit}"
-    )
 
     # Build base query with joins and time filter
     query = (
@@ -171,13 +167,6 @@ def get_random_bet_events(
 
     # Get random events using database-level randomization
     bet_events = query.order_by(func.random()).limit(limit).all()
-
-    # Debug logging
-    print(f"Query returned {len(bet_events)} events")
-    for event in bet_events:
-        print(
-            f"Event {event.id}: Game {event.game_id}, League {event.game.league_id if event.game else 'None'}"
-        )
 
     return bet_events
 

@@ -326,13 +326,19 @@ class NhlAiModel(AiModelInterface):
             db.close()
 
     def _train_goal_ensembles(self):
-        ensemble_files = [ENSEMBLE_GOALS_FILE, ENSEMBLE_HOME_GOALS_FILE, ENSEMBLE_AWAY_GOALS_FILE]
+        ensemble_files = [
+            ENSEMBLE_GOALS_FILE,
+            ENSEMBLE_HOME_GOALS_FILE,
+            ENSEMBLE_AWAY_GOALS_FILE,
+        ]
 
         if all(os.path.exists(f) for f in ensemble_files):
             oldest_mtime = min(os.path.getmtime(f) for f in ensemble_files)
             age_days = (datetime.now().timestamp() - oldest_mtime) / 86400
             if age_days < ENSEMBLE_RETRAIN_DAYS:
-                print(f"[train] Ensembles are {age_days:.1f}d old (< {ENSEMBLE_RETRAIN_DAYS}d), loading from cache")
+                print(
+                    f"[train] Ensembles are {age_days:.1f}d old (< {ENSEMBLE_RETRAIN_DAYS}d), loading from cache"
+                )
                 self._goals_models = joblib.load(ENSEMBLE_GOALS_FILE)
                 self._home_goals_models = joblib.load(ENSEMBLE_HOME_GOALS_FILE)
                 self._away_goals_models = joblib.load(ENSEMBLE_AWAY_GOALS_FILE)
@@ -617,9 +623,36 @@ class NhlAiModel(AiModelInterface):
         try:
             today = date.today()
 
-            today_file = os.path.join(PREDICTIONS_DIR, f"{self.LEAGUE_NAME}-{today}.csv")
+            try:
+                from sqlalchemy import inspect
+
+                inspector = (
+                    inspect(db.bind) if hasattr(db, "bind") and db.bind else None
+                )
+                if inspector:
+                    columns = [
+                        col["name"]
+                        for col in inspector.get_columns("philip_snat_nhl_games")
+                    ]
+                    if (
+                        "prediction_winner" not in columns
+                        or "prediction_goals" not in columns
+                    ):
+                        print(
+                            "[predict] ERROR: prediction_winner/prediction_goals columns not found in database. "
+                            "Please run: docker-compose exec backend alembic upgrade head"
+                        )
+                        return
+            except Exception as e:
+                print(f"[predict] Warning: Could not verify columns exist: {e}")
+
+            today_file = os.path.join(
+                PREDICTIONS_DIR, f"{self.LEAGUE_NAME}-{today}.csv"
+            )
             if os.path.exists(today_file):
-                print(f"[predict] Prediction file for today already exists: {today_file}, skipping")
+                print(
+                    f"[predict] Prediction file for today already exists: {today_file}, skipping"
+                )
                 return
 
             games = (
@@ -670,6 +703,30 @@ class NhlAiModel(AiModelInterface):
                         winner_prob, home_means, away_means, total_means
                     )
 
+                    try:
+                        from sqlalchemy import Table, MetaData
+
+                        metadata = MetaData()
+                        table = Table(
+                            "philip_snat_nhl_games", metadata, autoload_with=db.bind
+                        )
+                        db.execute(
+                            table.update()
+                            .where(table.c.id == game.id)
+                            .values(
+                                prediction_winner=float(winner_prob),
+                                prediction_goals={
+                                    k: float(v) for k, v in total_means.items()
+                                },
+                            )
+                        )
+                        db.commit()
+                    except Exception as db_error:
+                        print(
+                            f"  Error saving predictions for game {game.nhl_id}: {db_error}"
+                        )
+                        db.rollback()
+
                     rows.append(
                         {
                             "date": str(game.date),
@@ -686,9 +743,14 @@ class NhlAiModel(AiModelInterface):
 
                 except Exception as e:
                     print(f"  Error predicting game {game.nhl_id}: {e}")
+                    import traceback
+
+                    traceback.print_exc()
 
             if rows:
-                self._save_predictions_csv(rows, PREDICTIONS_DIR, self.LEAGUE_NAME, today)
+                self._save_predictions_csv(
+                    rows, PREDICTIONS_DIR, self.LEAGUE_NAME, today
+                )
                 self._cleanup_old_files(PREDICTIONS_DIR)
 
             print(f"[predict] Done — {len(rows)} games written")

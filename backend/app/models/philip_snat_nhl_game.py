@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, SmallInteger, Float, Boolean
+from sqlalchemy import Column, Integer, String, Date, SmallInteger, Float, Boolean, JSON
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -59,3 +59,5 @@ class PhilipSnatNhlGame(Base):
     hunger_fg = Column(Integer, nullable=False)
     home_fatigue = Column(Integer, nullable=False)
     away_fatigue = Column(Integer, nullable=False)
+    prediction_winner = Column(Float, nullable=True)
+    prediction_goals = Column(JSON, nullable=True)

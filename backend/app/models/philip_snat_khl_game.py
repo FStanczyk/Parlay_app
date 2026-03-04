@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Float, Boolean
+from sqlalchemy import Column, Integer, String, Date, Float, Boolean, JSON
 from app.core.database import Base
 
 
@@ -59,3 +59,5 @@ class PhilipSnatKhlGame(Base):
     a_l5gw = Column(Integer, nullable=True)
     l5gw_diff = Column(Integer, nullable=True)
     hom_score_no_ot = Column(Float, nullable=True)
+    prediction_winner = Column(Float, nullable=True)
+    prediction_goals = Column(JSON, nullable=True)

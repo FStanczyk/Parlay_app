@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await axios.post(`${API_BASE_URL}/auth/logout`, {}, { withCredentials: true });
     } catch {
     } finally {
-      setUser(null);
+    setUser(null);
     }
   };
 
