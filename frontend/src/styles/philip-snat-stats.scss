@@ -1,0 +1,288 @@
+.philip-snat-stats {
+  width: 100%;
+}
+
+.philip-snat-stats__container {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+
+.philip-snat-stats__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.philip-snat-stats__title {
+  font-family: var(--font-family-heading);
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: var(--font-weight-light);
+  color: var(--color-text-primary);
+  text-shadow: var(--text-glow-light);
+  margin: 0;
+}
+
+.philip-snat-stats__back-button {
+  flex-shrink: 0;
+}
+
+.philip-snat-stats__content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: var(--spacing-md);
+}
+
+.philip-snat-stats__league-card {
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.philip-snat-stats__stat-item--league {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  min-width: 80px;
+}
+
+.philip-snat-stats__league-name {
+  font-family: var(--font-family-heading);
+  font-size: clamp(1.25rem, 3vw, 1.5rem);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.philip-snat-stats__stat-item {
+  text-align: center;
+  padding: var(--spacing-sm);
+}
+
+.philip-snat-stats__stat-item--right-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  margin-left: auto;
+}
+
+.philip-snat-stats__stat-item--picks {
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.philip-snat-stats__picks-value {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.philip-snat-stats__stat-item--accuracy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.philip-snat-stats__stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+
+.philip-snat-stats__stat-value {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+
+.philip-snat-stats__circular-progress {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.philip-snat-stats__circular-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.philip-snat-stats__circular-bg {
+  opacity: 0.2;
+}
+
+.philip-snat-stats__circular-progress-bar {
+  transition: stroke-dashoffset 0.5s ease-in-out, stroke 0.5s ease-in-out;
+}
+
+.philip-snat-stats__circular-value {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: var(--font-weight-bold);
+  transition: color 0.5s ease-in-out;
+}
+
+.philip-snat-stats__empty {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  text-align: center;
+  padding: var(--spacing-xl);
+}
+
+.philip-snat-stats__show-games-button {
+  width: auto;
+  min-width: 150px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+}
+
+.philip-snat-stats__loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-xl);
+  margin-top: var(--spacing-lg);
+}
+
+.philip-snat-stats__loading-icon {
+  width: 64px;
+  height: 64px;
+  animation: fadeInOut 2s ease-in-out infinite;
+}
+
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.philip-snat-stats__games-list {
+  margin-top: var(--spacing-lg);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.philip-snat-stats__game-item {
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--color-border-subtle);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  justify-content: space-between;
+
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+}
+
+.philip-snat-stats__game-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.philip-snat-stats__game-chart {
+  flex-shrink: 0;
+  width: 300px;
+  height: 60px;
+}
+
+.philip-snat-stats__game-date {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+.philip-snat-stats__game-home,
+.philip-snat-stats__game-away {
+  font-weight: var(--font-weight-normal);
+}
+
+.philip-snat-stats__game-team--winner {
+  font-weight: var(--font-weight-bold);
+}
+
+.philip-snat-stats__game-prediction {
+  font-weight: var(--font-weight-bold);
+}
+
+.philip-snat-stats__game-prediction--correct {
+  color: var(--color-result-win);
+}
+
+.philip-snat-stats__game-prediction--incorrect {
+  color: var(--color-result-loose);
+}
+
+.philip-snat-stats__pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
+}
+
+.philip-snat-stats__pagination-button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  min-width: 100px;
+}
+
+.philip-snat-stats__pagination-info {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 768px) {
+  .philip-snat-stats__content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
+
+  .philip-snat-stats__stat-item--right-group {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .philip-snat-stats__game-item {
+    font-size: var(--font-size-sm);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+
+  .philip-snat-stats__game-chart {
+    width: 100%;
+  }
+
+  .philip-snat-stats__pagination {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+}

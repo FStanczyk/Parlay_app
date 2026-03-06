@@ -9,14 +9,27 @@
   padding: var(--spacing-lg);
 }
 
+.philip-snat-models__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
 .philip-snat-models__title {
   font-family: var(--font-family-heading);
   font-size: clamp(1.5rem, 4vw, 2.5rem);
   font-weight: var(--font-weight-light);
-  
+
   color: var(--color-text-primary);
   text-shadow: var(--text-glow-light);
-  margin: 0 0 var(--spacing-xl) 0;
+  margin: 0;
+}
+
+.philip-snat-models__stats-button {
+  flex-shrink: 0;
 }
 
 .philip-snat-models__records {

@@ -65,7 +65,15 @@ const PhilipSnatModels: React.FC = () => {
   return (
     <div className="philip-snat-models">
       <div className="philip-snat-models__container">
-        <h1 className="philip-snat-models__title">Philip Snat Models</h1>
+        <div className="philip-snat-models__header">
+          <h1 className="philip-snat-models__title">Philip Snat Models</h1>
+          <button
+            className="button_primary philip-snat-models__stats-button"
+            onClick={() => navigate('/philip-snat-models/stats')}
+          >
+            Stats
+          </button>
+        </div>
 
         {csvRecords.length > 0 ? (
           <div className="philip-snat-models__records">

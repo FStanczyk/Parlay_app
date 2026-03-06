@@ -60,5 +60,10 @@ frontend/build/
 
 # Temporary files
 temp/
-uploads/# Large ML model files
+uploads/
+
+# Large ML model files
 backend/philip_snat_models/nhl/pytorch_models/universal_player_model.pkl
+backend/philip_snat_models/nhl/scalers/ensemble_goals.joblib
+backend/philip_snat_models/nhl/scalers/ensemble_home_goals.joblib
+backend/philip_snat_models/nhl/scalers/ensemble_away_goals.joblib

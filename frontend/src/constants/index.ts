@@ -29,7 +29,6 @@ export const APP_CONFIG = {
     EXPERT_MONETIZATION: '/expert-panel/monetization',
     EXPERT_STATISTICS: '/expert-panel/statistics',
     ADMIN_PANEL: '/admin-panel',
-    ADMIN_ADD_AI_PREDICTIONS: '/admin-panel/add-ai-predictions',
     ADMIN_USERS: '/admin-panel/users',
     LOGIN: '/login',
     REGISTER: '/register',

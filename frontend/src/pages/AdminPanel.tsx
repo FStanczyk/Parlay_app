@@ -7,10 +7,6 @@ import type { NavItem } from '../components/AdminSideNav';
 const AdminPanel: React.FC = () => {
   const navItems: NavItem[] = [
     {
-      label: 'Add AI predictions',
-      route: ROUTES.ADMIN_ADD_AI_PREDICTIONS,
-    },
-    {
       label: 'Users',
       route: ROUTES.ADMIN_USERS,
     },

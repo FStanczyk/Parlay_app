@@ -11,8 +11,8 @@ import ExpertPanel from './pages/ExpertPanel';
 import Hub from './pages/Hub';
 import PhilipSnatModels from './pages/PhilipSnatModels';
 import PhilipSnatModelView from './pages/PhilipSnatModelView';
+import PhilipSnatStats from './pages/PhilipSnatStats';
 import AdminPanel from './pages/AdminPanel';
-import AddAIPredictions from './pages/AdminPanelPages/AddAIPredictions';
 import Users from './pages/AdminPanelPages/Users';
 import EditProfile from './pages/ExpertPanelPages/EditProfile';
 import ManageMonetization from './pages/ExpertPanelPages/ManageMonetization';
@@ -45,6 +45,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/philip-snat-models" element={<PhilipSnatModels />} />
+              <Route path="/philip-snat-models/stats" element={<PhilipSnatStats />} />
               <Route path="/philip-snat-models/:file_id" element={<PhilipSnatModelView />} />
               <Route
                 path="/hub"
@@ -132,11 +133,7 @@ function App() {
               >
                 <Route
                   index
-                  element={<Navigate to="/admin-panel/add-ai-predictions" replace />}
-                />
-                <Route
-                  path="add-ai-predictions"
-                  element={<AddAIPredictions />}
+                  element={<Navigate to="/admin-panel/users" replace />}
                 />
                 <Route
                   path="users"
