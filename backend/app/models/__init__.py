@@ -21,6 +21,8 @@ from app.models.philip_snat_sport import PhilipSnatSport
 from app.models.philip_snat_prediction_file import PhilipSnatPredictionFile
 from app.models.philip_snat_nhl_game import PhilipSnatNhlGame
 from app.models.philip_snat_khl_game import PhilipSnatKhlGame
+from app.models.philip_snat_shl_game import PhilipSnatShlGame
+from app.models.philip_snat_nl_game import PhilipSnatNlGame
 from app.models.philip_snat_league import PhilipSnatLeague
 from app.models.philip_snat_ai_model import PhilipSnatAiModel
 
@@ -48,6 +50,8 @@ __all__ = [
     "PhilipSnatPredictionFile",
     "PhilipSnatNhlGame",
     "PhilipSnatKhlGame",
+    "PhilipSnatShlGame",
+    "PhilipSnatNlGame",
     "PhilipSnatLeague",
     "PhilipSnatAiModel",
 ]

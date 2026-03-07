@@ -8,10 +8,14 @@ from app.core.database import SessionLocal
 from app.models.philip_snat_league import PhilipSnatLeague
 from philip_snat_models.nhl.model import NhlAiModel
 from philip_snat_models.khl.model import KhlAiModel
+from philip_snat_models.shl.model import ShlAiModel
+from philip_snat_models.nl.model import NlAiModel
 
 ALL_MODELS = [
     NhlAiModel,
     KhlAiModel,
+    ShlAiModel,
+    NlAiModel,
 ]
 
 LOCK_FILE = "/tmp/philip_snat_runner.lock"

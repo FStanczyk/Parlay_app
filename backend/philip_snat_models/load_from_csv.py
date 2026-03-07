@@ -8,6 +8,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.core.database import SessionLocal
 from app.models.philip_snat_nhl_game import PhilipSnatNhlGame
 from app.models.philip_snat_khl_game import PhilipSnatKhlGame
+from app.models.philip_snat_shl_game import PhilipSnatShlGame
+from app.models.philip_snat_nl_game import PhilipSnatNlGame
 
 CSV_TO_MODEL = {
     "id": "nhl_id",
@@ -290,9 +292,319 @@ def load_khl_games_from_csv(csv_path: str, skip_existing: bool = True) -> None:
         db.close()
 
 
+SHL_CSV_TO_MODEL = {
+    "uuid": "shl_uuid",
+    "date": "date",
+    "home": "home_team",
+    "away": "away_team",
+    "winner": "winner",
+    "homeScore": "home_score",
+    "awayScore": "away_score",
+    "homeScoreNoOT": "home_score_no_ot",
+    "awayScoreNoOT": "away_score_no_ot",
+    "totalGoals": "total_goals",
+    "totalGoalsNoOT": "total_goals_no_ot",
+    "OT": "ot",
+    "SO": "so",
+    "HomeRank": "home_rank",
+    "AwayRank": "away_rank",
+    "RankDiff": "rank_diff",
+    "HGPG": "h_gpg",
+    "AGPG": "a_gpg",
+    "GPGDiff": "gpg_diff",
+    "GPMutual": "gpmutual",
+    "HGAPG": "h_gapg",
+    "AGAPG": "a_gapg",
+    "GAPGDiff": "gapg_diff",
+    "GAPMutual": "gapmutual",
+    "HPPPerc": "h_pp_perc",
+    "APPPerc": "a_pp_perc",
+    "HPKPerc": "h_pk_perc",
+    "APKPerc": "a_pk_perc",
+    "HSEff": "h_s_eff",
+    "ASEff": "a_s_eff",
+    "HSVSPerc": "h_svs_perc",
+    "ASVSPerc": "a_svs_perc",
+    "HFOPerc": "h_fo_perc",
+    "AFOPerc": "a_fo_perc",
+    "HCFPerc": "h_cf_perc",
+    "ACFPerc": "a_cf_perc",
+    "HFFPerc": "h_ff_perc",
+    "AFFPerc": "a_ff_perc",
+    "HCloseCFPerc": "h_close_cf_perc",
+    "ACloseCFPerc": "a_close_cf_perc",
+    "HCloseFFPerc": "h_close_ff_perc",
+    "ACloseFFPerc": "a_close_ff_perc",
+    "HPDO": "h_pdo",
+    "APDO": "a_pdo",
+    "HSTPerc": "h_st_perc",
+    "ASTPerc": "a_st_perc",
+    "HPPSEff": "h_pps_eff",
+    "APPSEff": "a_pps_eff",
+    "HSOGPG": "h_sogpg",
+    "ASOGPG": "a_sogpg",
+    "SOGPGDiff": "sogpg_diff",
+    "SOGPGMutual": "sogpg_mutual",
+    "HL5GW": "h_l5gw",
+    "AL5GW": "a_l5gw",
+    "L5GWDiff": "l5gw_diff",
+    "HLmdGPG1": "h_lmd_gpg1",
+    "ALmdGPG1": "a_lmd_gpg1",
+    "HLmdGPG2": "h_lmd_gpg2",
+    "ALmdGPG2": "a_lmd_gpg2",
+    "HLmdGAPG1": "h_lmd_gapg1",
+    "ALmdGAPG1": "a_lmd_gapg1",
+    "HLmdGAPG2": "h_lmd_gapg2",
+    "ALmdGAPG2": "a_lmd_gapg2",
+    "HShameFactor": "h_shame_factor",
+    "AShameFactor": "a_shame_factor",
+    "HHungerFG": "h_hunger_fg",
+    "AHungerFG": "a_hunger_fg",
+    "HungerFGDiff": "hunger_fg_diff",
+    "HungerFGMutual": "hunger_fg_mutual",
+}
+
+SHL_BOOL_FIELDS = {"ot", "so"}
+
+SHL_NULLABLE_FIELDS = {
+    "winner",
+    "home_score",
+    "away_score",
+    "home_score_no_ot",
+    "away_score_no_ot",
+    "total_goals",
+    "total_goals_no_ot",
+    "ot",
+    "so",
+}
+
+
+def _parse_shl_value(field: str, raw: str):
+    if raw == "" or raw is None:
+        return None
+    if field == "date":
+        return date.fromisoformat(raw.strip())
+    if field in SHL_BOOL_FIELDS:
+        raw_val = raw.strip()
+        return raw_val.lower() in ("true", "1") or float(raw_val) == 1.0
+    if field == "winner":
+        raw_val = raw.strip()
+        if raw_val == "":
+            return None
+        return int(float(raw_val))
+    try:
+        if "." in raw:
+            return float(raw)
+        return int(raw)
+    except ValueError:
+        return raw.strip() or None
+
+
+def load_shl_games_from_csv(csv_path: str, skip_existing: bool = True) -> None:
+    path = Path(csv_path)
+    if not path.exists():
+        print(f"File not found: {csv_path}")
+        return
+
+    db = SessionLocal()
+    try:
+        inserted = 0
+        skipped = 0
+
+        existing_shl_uuids: set[str] = set()
+        if skip_existing:
+            existing_shl_uuids = {
+                row[0]
+                for row in db.query(PhilipSnatShlGame.shl_uuid).all()
+                if row[0] is not None
+            }
+
+        with open(path, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                kwargs: dict = {}
+                for csv_col, model_field in SHL_CSV_TO_MODEL.items():
+                    raw = row.get(csv_col, "")
+                    kwargs[model_field] = _parse_shl_value(model_field, raw)
+
+                shl_uuid = kwargs.get("shl_uuid")
+                if skip_existing and shl_uuid in existing_shl_uuids:
+                    skipped += 1
+                    continue
+
+                game = PhilipSnatShlGame(**kwargs)
+                db.add(game)
+                inserted += 1
+
+        db.commit()
+        print(f"Done — inserted: {inserted}, skipped (already exist): {skipped}")
+    except Exception as e:
+        db.rollback()
+        print(f"Error: {e}")
+        raise
+    finally:
+        db.close()
+
+
+NL_CSV_TO_MODEL = {
+    "game_id": "nl_id",
+    "date": "date",
+    "hour": "hour",
+    "home_team": "home_team",
+    "away_team": "away_team",
+    "winner": "winner",
+    "home_score": "home_score",
+    "away_score": "away_score",
+    "home_score_no_ot": "home_score_no_ot",
+    "away_score_no_ot": "away_score_no_ot",
+    "total_score": "total_score",
+    "total_score_no_ot": "total_score_no_ot",
+    "OT": "ot",
+    "SO": "so",
+    "HRank": "h_rank",
+    "ARank": "a_rank",
+    "RankDiff": "rank_diff",
+    "HGpG": "h_gpg",
+    "AGpG": "a_gpg",
+    "GpGDiff": "gpg_diff",
+    "HGApG": "h_gapg",
+    "AGApG": "a_gapg",
+    "GApGDiff": "gapg_diff",
+    "HSOGpG": "h_sogpg",
+    "ASOGpG": "a_sogpg",
+    "SOGpGDiff": "sogpg_diff",
+    "HSSlotPG": "h_sslotpg",
+    "ASSlotPG": "a_sslotpg",
+    "SSlotPGDiff": "sslotpg_diff",
+    "HSHMpG": "h_shmpg",
+    "ASHMpG": "a_shmpg",
+    "HMpGDiff": "hmpg_diff",
+    "HSHPpG": "h_shppg",
+    "ASHPpG": "a_shppg",
+    "HPpGDiff": "hpppg_diff",
+    "HPPGpG": "h_ppgpgg",
+    "APPGpG": "a_ppgpgg",
+    "PGpGDiff": "ppgpgg_diff",
+    "HPPGApG": "h_ppgapg",
+    "APPGApG": "a_ppgapg",
+    "PPGApGDiff": "ppgapg_diff",
+    "HPPGEff": "h_ppgeff",
+    "APPGEff": "a_ppgeff",
+    "PPGEffDiff": "ppgeff_diff",
+    "HPKEff": "h_pkeff",
+    "APKEff": "a_pkeff",
+    "PKEffDiff": "pkeff_diff",
+    "HSApG": "h_sapg",
+    "ASApG": "a_sapg",
+    "SApGDiff": "sapg_diff",
+    "HSSlotApG": "h_sslotapg",
+    "ASSlotApG": "a_sslotapg",
+    "SSlotApGDiff": "sslotapg_diff",
+    "HLGD": "h_lgd",
+    "ALGD": "a_lgd",
+    "HLGPA": "h_lgpa",
+    "ALGPA": "a_lgpa",
+    "HLGOP": "h_lgop",
+    "ALGOP": "a_lgop",
+    "LGOPDiff": "lgop_diff",
+    "HL5GW": "h_l5gw",
+    "AL5GW": "a_l5gw",
+    "L5GWDiff": "l5gw_diff",
+}
+
+NL_STRING_FIELDS = {
+    "nl_id",
+    "h_lgd",
+    "a_lgd",
+    "h_lgpa",
+    "a_lgpa",
+    "h_lgop",
+    "a_lgop",
+    "winner",
+    "hour",
+}
+
+NL_BOOL_FIELDS = {"ot", "so"}
+
+NL_NULLABLE_FIELDS = {
+    "winner",
+    "home_score",
+    "away_score",
+    "home_score_no_ot",
+    "away_score_no_ot",
+    "total_score",
+    "total_score_no_ot",
+    "ot",
+    "so",
+}
+
+
+def _parse_nl_value(field: str, raw: str):
+    if raw == "" or raw is None:
+        return None
+    if field == "date":
+        return date.fromisoformat(raw.strip())
+    if field in NL_BOOL_FIELDS:
+        return raw.strip().lower() in ("true", "1")
+    if field in NL_STRING_FIELDS:
+        return raw.strip() or None
+    try:
+        if "." in raw:
+            return float(raw)
+        return int(raw)
+    except ValueError:
+        return raw.strip() or None
+
+
+def load_nl_games_from_csv(csv_path: str, skip_existing: bool = True) -> None:
+    path = Path(csv_path)
+    if not path.exists():
+        print(f"File not found: {csv_path}")
+        return
+
+    db = SessionLocal()
+    try:
+        inserted = 0
+        skipped = 0
+
+        existing_nl_ids: set[str] = set()
+        if skip_existing:
+            existing_nl_ids = {
+                str(row[0])
+                for row in db.query(PhilipSnatNlGame.nl_id).all()
+                if row[0] is not None
+            }
+
+        with open(path, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                kwargs: dict = {}
+                for csv_col, model_field in NL_CSV_TO_MODEL.items():
+                    raw = row.get(csv_col, "")
+                    kwargs[model_field] = _parse_nl_value(model_field, raw)
+
+                nl_id = kwargs.get("nl_id")
+                if skip_existing and nl_id and str(nl_id) in existing_nl_ids:
+                    skipped += 1
+                    continue
+
+                game = PhilipSnatNlGame(**kwargs)
+                db.add(game)
+                inserted += 1
+
+        db.commit()
+        print(f"Done — inserted: {inserted}, skipped (already exist): {skipped}")
+    except Exception as e:
+        db.rollback()
+        print(f"Error: {e}")
+        raise
+    finally:
+        db.close()
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print("Usage: python load_from_csv.py <nhl|khl> <path_to_csv>")
+        print("Usage: python load_from_csv.py <nhl|khl|shl|nl> <path_to_csv>")
         sys.exit(1)
     league = sys.argv[1].lower()
     csv_file = sys.argv[2]
@@ -300,6 +612,10 @@ if __name__ == "__main__":
         load_nhl_games_from_csv(csv_file)
     elif league == "khl":
         load_khl_games_from_csv(csv_file)
+    elif league == "shl":
+        load_shl_games_from_csv(csv_file)
+    elif league == "nl":
+        load_nl_games_from_csv(csv_file)
     else:
-        print(f"Unknown league '{league}'. Use 'nhl' or 'khl'.")
+        print(f"Unknown league '{league}'. Use 'nhl', 'khl', 'shl', or 'nl'.")
         sys.exit(1)
